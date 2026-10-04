@@ -7,6 +7,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -39,11 +40,17 @@ public class StationaryTracker extends AdvancedRobot {
 
 	// Stage 10 - Statistical Targeting
 	private static final int MAX_STATISTICAL_BINS = 31;
-	private static final int STATISTICAL_SEGMENTS = 9;
 	private static final int MIN_STATISTICAL_SAMPLES = 8;
-	private static final double STATISTICAL_BIN_WIDTH = 0.10;
 	private static final double STATISTICAL_LEARNING_RATE = 1.0;
 	private static final double STATISTICAL_ESCAPE_THRESHOLD = 0.55;
+
+	// Stage 11 - GuessFactor Targeting
+	private static final int GUESS_FACTOR_BINS = 31;
+	private static final double MAX_ESCAPE_ANGLE =
+		Math.asin(8.0 / 11.0);
+
+	private static final int MAX_BULLET_WAVES = 80;
+	private static final double WAVE_HIT_RADIUS = 24.0;
 
 	private int movementDirection = 1;
 
@@ -61,6 +68,13 @@ public class StationaryTracker extends AdvancedRobot {
 	private final Map<String, StatisticalData> statisticalData =
 		new HashMap<>();
 
+	// Stage 11
+	private final Map<String, GuessFactorData> guessFactorData =
+		new HashMap<>();
+
+	private final List<BulletWave> bulletWaves =
+		new ArrayList<>();
+
 	public void run() {
 
 		setAdjustGunForRobotTurn(true);
@@ -76,6 +90,8 @@ public class StationaryTracker extends AdvancedRobot {
 
 			updateBulletDetection();
 
+			updateBulletWaves();
+
 			updateMovement();
 
 			execute();
@@ -89,18 +105,26 @@ public class StationaryTracker extends AdvancedRobot {
 		if (enemy == null) {
 
 			enemy = new EnemyData(e.getName());
-			enemies.put(e.getName(), enemy);
+
+			enemies.put(
+				e.getName(),
+				enemy
+			);
 
 			statisticalData.put(
 				e.getName(),
 				new StatisticalData()
 			);
+
+			guessFactorData.put(
+				e.getName(),
+				new GuessFactorData()
+			);
 		}
 
 		/*
-		 * Stage 10:
-		 * Before replacing the previous enemy state,
-		 * register where the enemy actually moved.
+		 * Learn the enemy's movement before replacing
+		 * the previous scan data.
 		 */
 		learnMovementPattern(enemy);
 
@@ -121,7 +145,7 @@ public class StationaryTracker extends AdvancedRobot {
 		updateThreat(enemy);
 
 		// =====================================================
-		// Stage 10 - Statistical Targeting
+		// Stage 11 - GuessFactor Targeting
 		// =====================================================
 
 		double bulletPower =
@@ -136,7 +160,7 @@ public class StationaryTracker extends AdvancedRobot {
 			(3.0 * bulletPower);
 
 		Point2D.Double predictedPosition =
-			getStatisticalPrediction(
+			getGuessFactorPrediction(
 				enemy,
 				bulletSpeed
 			);
@@ -147,9 +171,6 @@ public class StationaryTracker extends AdvancedRobot {
 		double predictedY =
 			predictedPosition.y;
 
-		/*
-		 * Keep the prediction inside the battlefield.
-		 */
 		predictedX =
 			Math.max(
 				18,
@@ -186,8 +207,524 @@ public class StationaryTracker extends AdvancedRobot {
 			Math.abs(getGunTurnRemaining()) < 1
 		) {
 
+			/*
+			 * Register a wave at the exact moment the
+			 * bullet is fired.
+			 */
+			addBulletWave(
+				enemy,
+				bulletPower,
+				aimBearing
+			);
+
 			setFire(bulletPower);
 		}
+	}
+
+	// =========================================================
+	// Stage 11 - GuessFactor Targeting
+	// =========================================================
+
+	private Point2D.Double getGuessFactorPrediction(
+		EnemyData enemy,
+		double bulletSpeed
+	) {
+
+		/*
+		 * Start with the wall-aware linear prediction.
+		 * This is used as the fallback until enough
+		 * GuessFactor data has been collected.
+		 */
+		Point2D.Double linearPrediction =
+			getLinearPrediction(
+				enemy,
+				bulletSpeed
+			);
+
+		GuessFactorData data =
+			guessFactorData.get(
+				enemy.name
+			);
+
+		if (
+			data == null ||
+			data.totalSamples <
+			MIN_STATISTICAL_SAMPLES
+		) {
+
+			return linearPrediction;
+		}
+
+		int bestBin =
+			getBestGuessFactorBin(data);
+
+		double guessFactor =
+			binToGuessFactor(
+				bestBin
+			);
+
+		double absoluteBearing =
+			Math.atan2(
+				enemy.x - getX(),
+				enemy.y - getY()
+			);
+
+		/*
+		 * Determine whether the enemy is moving clockwise
+		 * or counter-clockwise relative to our position.
+		 */
+		double lateralVelocity =
+			enemy.velocity *
+			Math.sin(
+				enemy.heading -
+				absoluteBearing
+			);
+
+		double direction = 1.0;
+
+		if (lateralVelocity < 0) {
+			direction = -1.0;
+		}
+
+		double maxEscapeAngle =
+			Math.asin(
+				Math.min(
+					1.0,
+					8.0 / bulletSpeed
+				)
+			);
+
+		double offsetAngle =
+			guessFactor *
+			maxEscapeAngle *
+			direction;
+
+		double firingAngle =
+			absoluteBearing +
+			offsetAngle;
+
+		double distance =
+			Point2D.distance(
+				getX(),
+				getY(),
+				enemy.x,
+				enemy.y
+			);
+
+		double travelTime =
+			distance /
+			bulletSpeed;
+
+		/*
+		 * Predict the enemy along the selected GuessFactor.
+		 */
+		double predictedX =
+			enemy.x +
+			Math.sin(
+				enemy.heading +
+				offsetAngle
+			) *
+			enemy.velocity *
+			travelTime;
+
+		double predictedY =
+			enemy.y +
+			Math.cos(
+				enemy.heading +
+				offsetAngle
+			) *
+			enemy.velocity *
+			travelTime;
+
+		/*
+		 * The GuessFactor is fundamentally an angular
+		 * correction, so use the selected firing angle
+		 * as the primary targeting direction.
+		 */
+		predictedX =
+			getX() +
+			Math.sin(firingAngle) *
+			distance;
+
+		predictedY =
+			getY() +
+			Math.cos(firingAngle) *
+			distance;
+
+		return new Point2D.Double(
+			predictedX,
+			predictedY
+		);
+	}
+
+	private Point2D.Double getLinearPrediction(
+		EnemyData enemy,
+		double bulletSpeed
+	) {
+
+		double predictedX =
+			enemy.x;
+
+		double predictedY =
+			enemy.y;
+
+		double deltaTime =
+			Point2D.distance(
+				getX(),
+				getY(),
+				enemy.x,
+				enemy.y
+			) /
+			bulletSpeed;
+
+		for (int i = 0; i < 10; i++) {
+
+			Point2D.Double prediction =
+				WallPrediction.predict(
+					enemy.x,
+					enemy.y,
+					enemy.heading,
+					enemy.velocity,
+					deltaTime,
+					getBattleFieldWidth(),
+					getBattleFieldHeight()
+				);
+
+			predictedX =
+				prediction.x;
+
+			predictedY =
+				prediction.y;
+
+			double distance =
+				Point2D.distance(
+					getX(),
+					getY(),
+					predictedX,
+					predictedY
+				);
+
+			deltaTime =
+				distance /
+				bulletSpeed;
+		}
+
+		return new Point2D.Double(
+			predictedX,
+			predictedY
+		);
+	}
+
+	private void addBulletWave(
+		EnemyData enemy,
+		double bulletPower,
+		double firingAngle
+	) {
+
+		double bulletSpeed =
+			20.0 -
+			(3.0 * bulletPower);
+
+		double absoluteBearing =
+			Math.atan2(
+				enemy.x - getX(),
+				enemy.y - getY()
+			);
+
+		double lateralVelocity =
+			enemy.velocity *
+			Math.sin(
+				enemy.heading -
+				absoluteBearing
+			);
+
+		int direction =
+			lateralVelocity >= 0
+				? 1
+				: -1;
+
+		BulletWave wave =
+			new BulletWave();
+
+		wave.x = getX();
+		wave.y = getY();
+
+		wave.fireTime =
+			getTime();
+
+		wave.bulletSpeed =
+			bulletSpeed;
+
+		wave.bulletPower =
+			bulletPower;
+
+		wave.targetName =
+			enemy.name;
+
+		wave.directAngle =
+			absoluteBearing;
+
+		wave.firingAngle =
+			firingAngle;
+
+		wave.direction =
+			direction;
+
+		wave.distance =
+			enemy.distance;
+
+		bulletWaves.add(wave);
+
+		while (
+			bulletWaves.size() >
+			MAX_BULLET_WAVES
+		) {
+
+			bulletWaves.remove(0);
+		}
+	}
+
+	private void updateBulletWaves() {
+
+		if (bulletWaves.isEmpty()) {
+			return;
+		}
+
+		Iterator<BulletWave> iterator =
+			bulletWaves.iterator();
+
+		while (iterator.hasNext()) {
+
+			BulletWave wave =
+				iterator.next();
+
+			double traveledDistance =
+				(getTime() -
+					wave.fireTime) *
+				wave.bulletSpeed;
+
+			EnemyData enemy =
+				enemies.get(
+					wave.targetName
+				);
+
+			if (enemy == null) {
+
+				iterator.remove();
+
+				continue;
+			}
+
+			double enemyDistance =
+				Point2D.distance(
+					wave.x,
+					wave.y,
+					enemy.x,
+					enemy.y
+				);
+
+			/*
+			 * The wave has reached the enemy's
+			 * current position.
+			 */
+			if (
+				traveledDistance >=
+				enemyDistance -
+				WAVE_HIT_RADIUS
+			) {
+
+				updateGuessFactorStatistics(
+					wave,
+					enemy
+				);
+
+				iterator.remove();
+
+				continue;
+			}
+
+			/*
+			 * Remove waves that have already passed
+			 * the maximum possible battlefield distance.
+			 */
+			if (
+				traveledDistance >
+				Math.hypot(
+					getBattleFieldWidth(),
+					getBattleFieldHeight()
+				) +
+				100
+			) {
+
+				iterator.remove();
+			}
+		}
+	}
+
+	private void updateGuessFactorStatistics(
+		BulletWave wave,
+		EnemyData enemy
+	) {
+
+		GuessFactorData data =
+			guessFactorData.get(
+				wave.targetName
+			);
+
+		if (data == null) {
+
+			data =
+				new GuessFactorData();
+
+			guessFactorData.put(
+				wave.targetName,
+				data
+			);
+		}
+
+		double absoluteBearing =
+			Math.atan2(
+				enemy.x - wave.x,
+				enemy.y - wave.y
+			);
+
+		double angleOffset =
+			Utils.normalRelativeAngle(
+				absoluteBearing -
+				wave.directAngle
+			);
+
+		double maxEscapeAngle =
+			Math.asin(
+				Math.min(
+					1.0,
+					8.0 /
+					wave.bulletSpeed
+				)
+			);
+
+		double guessFactor =
+			angleOffset /
+			maxEscapeAngle;
+
+		guessFactor =
+			Math.max(
+				-1.0,
+				Math.min(
+					1.0,
+					guessFactor
+				)
+			);
+
+		/*
+		 * Normalize according to the enemy's movement
+		 * direction when the wave was fired.
+		 */
+		guessFactor *=
+			wave.direction;
+
+		int index =
+			guessFactorToBin(
+				guessFactor
+			);
+
+		data.bins[index] +=
+			STATISTICAL_LEARNING_RATE;
+
+		data.totalSamples +=
+			STATISTICAL_LEARNING_RATE;
+	}
+
+	private int getBestGuessFactorBin(
+		GuessFactorData data
+	) {
+
+		int bestBin =
+			GUESS_FACTOR_BINS / 2;
+
+		double bestValue =
+			-Double.MAX_VALUE;
+
+		for (
+			int i = 0;
+			i < data.bins.length;
+			i++
+		) {
+
+			/*
+			 * Smooth neighboring bins so the targeting
+			 * system does not overreact to one observation.
+			 */
+			double value =
+				data.bins[i];
+
+			if (i > 0) {
+				value +=
+					data.bins[i - 1] *
+					0.5;
+			}
+
+			if (
+				i <
+				data.bins.length - 1
+			) {
+
+				value +=
+					data.bins[i + 1] *
+					0.5;
+			}
+
+			if (value > bestValue) {
+
+				bestValue =
+					value;
+
+				bestBin =
+					i;
+			}
+		}
+
+		return bestBin;
+	}
+
+	private int guessFactorToBin(
+		double guessFactor
+	) {
+
+		double normalized =
+			(
+				guessFactor + 1.0
+			) /
+			2.0;
+
+		int index =
+			(int)
+			Math.round(
+				normalized *
+				(GUESS_FACTOR_BINS - 1)
+			);
+
+		return Math.max(
+			0,
+			Math.min(
+				GUESS_FACTOR_BINS - 1,
+				index
+			)
+		);
+	}
+
+	private double binToGuessFactor(
+		int bin
+	) {
+
+		return (
+			(
+				bin /
+				(double)
+				(GUESS_FACTOR_BINS - 1)
+			) *
+			2.0
+		) - 1.0;
 	}
 
 	// =========================================================
@@ -203,11 +740,15 @@ public class StationaryTracker extends AdvancedRobot {
 		}
 
 		StatisticalData data =
-			statisticalData.get(enemy.name);
+			statisticalData.get(
+				enemy.name
+			);
 
 		if (data == null) {
 
-			data = new StatisticalData();
+			data =
+				new StatisticalData();
+
 			statisticalData.put(
 				enemy.name,
 				data
@@ -216,8 +757,10 @@ public class StationaryTracker extends AdvancedRobot {
 
 		double movementAngle =
 			Math.atan2(
-				enemy.x - enemy.previousX,
-				enemy.y - enemy.previousY
+				enemy.x -
+				enemy.previousX,
+				enemy.y -
+				enemy.previousY
 			);
 
 		double actualMovement =
@@ -237,13 +780,6 @@ public class StationaryTracker extends AdvancedRobot {
 				enemy.previousHeading
 			);
 
-		/*
-		 * Normalize lateral movement.
-		 *
-		 * -1 = strongly moving left
-		 *  0 = moving directly toward/away
-		 * +1 = strongly moving right
-		 */
 		double lateralFactor =
 			Math.sin(
 				movementRelativeToEnemy
@@ -255,7 +791,8 @@ public class StationaryTracker extends AdvancedRobot {
 
 		double velocityFactor =
 			Math.min(
-				Math.abs(enemy.velocity) / 8.0,
+				Math.abs(enemy.velocity) /
+				8.0,
 				1.0
 			);
 
@@ -302,10 +839,6 @@ public class StationaryTracker extends AdvancedRobot {
 				STATISTICAL_LEARNING_RATE;
 		}
 
-		/*
-		 * Track whether the enemy frequently changes
-		 * movement side.
-		 */
 		if (data.hasPreviousLateral) {
 
 			if (
@@ -324,251 +857,8 @@ public class StationaryTracker extends AdvancedRobot {
 		data.previousLateral =
 			lateralFactor;
 
-		data.hasPreviousLateral = true;
-	}
-
-	private Point2D.Double getStatisticalPrediction(
-		EnemyData enemy,
-		double bulletSpeed
-	) {
-
-		/*
-		 * Start with the normal wall-aware linear prediction.
-		 */
-		double predictedX =
-			enemy.x;
-
-		double predictedY =
-			enemy.y;
-
-		double deltaTime =
-			Point2D.distance(
-				getX(),
-				getY(),
-				enemy.x,
-				enemy.y
-			) / bulletSpeed;
-
-		for (int i = 0; i < 10; i++) {
-
-			Point2D.Double prediction =
-				WallPrediction.predict(
-					enemy.x,
-					enemy.y,
-					enemy.heading,
-					enemy.velocity,
-					deltaTime,
-					getBattleFieldWidth(),
-					getBattleFieldHeight()
-				);
-
-			predictedX =
-				prediction.x;
-
-			predictedY =
-				prediction.y;
-
-			double distance =
-				Point2D.distance(
-					getX(),
-					getY(),
-					predictedX,
-					predictedY
-				);
-
-			deltaTime =
-				distance /
-				bulletSpeed;
-		}
-
-		StatisticalData data =
-			statisticalData.get(
-				enemy.name
-			);
-
-		if (
-			data == null ||
-			data.totalSamples < MIN_STATISTICAL_SAMPLES
-		) {
-
-			return new Point2D.Double(
-				predictedX,
-				predictedY
-			);
-		}
-
-		/*
-		 * Determine the most likely movement direction
-		 * from previous observations.
-		 */
-		double leftProbability =
-			data.leftSamples /
-			Math.max(
-				data.totalSamples,
-				1.0
-			);
-
-		double rightProbability =
-			data.rightSamples /
-			Math.max(
-				data.totalSamples,
-				1.0
-			);
-
-		double forwardProbability =
-			data.forwardSamples /
-			Math.max(
-				data.totalSamples,
-				1.0
-			);
-
-		double lateralOffset = 0;
-
-		if (
-			leftProbability >
-			rightProbability &&
-			leftProbability >
-			forwardProbability
-		) {
-
-			lateralOffset =
-				-enemy.velocity *
-				0.75;
-
-		} else if (
-			rightProbability >
-			leftProbability &&
-			rightProbability >
-			forwardProbability
-		) {
-
-			lateralOffset =
-				enemy.velocity *
-				0.75;
-		}
-
-		/*
-		 * If the enemy has a strong tendency to switch
-		 * directions, reduce the statistical correction.
-		 */
-		double changeProbability =
-			data.directionChanges /
-			Math.max(
-				data.totalSamples,
-				1.0
-			);
-
-		if (
-			changeProbability >
-			STATISTICAL_ESCAPE_THRESHOLD
-		) {
-
-			lateralOffset *= 0.35;
-		}
-
-		/*
-		 * Convert the statistical lateral movement into
-		 * a position offset perpendicular to the enemy's
-		 * current heading.
-		 */
-		double perpendicularX =
-			Math.cos(enemy.heading);
-
-		double perpendicularY =
-			-Math.sin(enemy.heading);
-
-		predictedX +=
-			perpendicularX *
-			lateralOffset *
-			Math.min(deltaTime, 20.0);
-
-		predictedY +=
-			perpendicularY *
-			lateralOffset *
-			Math.min(deltaTime, 20.0);
-
-		/*
-		 * Statistical velocity prediction.
-		 */
-		double averageVelocity =
-			calculateStatisticalVelocity(
-				data,
-				enemy.velocity
-			);
-
-		double velocityDifference =
-			averageVelocity -
-			enemy.velocity;
-
-		predictedX +=
-			Math.sin(enemy.heading) *
-			velocityDifference *
-			Math.min(deltaTime, 20.0);
-
-		predictedY +=
-			Math.cos(enemy.heading) *
-			velocityDifference *
-			Math.min(deltaTime, 20.0);
-
-		return new Point2D.Double(
-			predictedX,
-			predictedY
-		);
-	}
-
-	private double calculateStatisticalVelocity(
-		StatisticalData data,
-		double currentVelocity
-	) {
-
-		double weightedVelocity = 0;
-		double totalWeight = 0;
-
-		for (
-			int i = 0;
-			i < data.velocityBins.length;
-			i++
-		) {
-
-			double weight =
-				data.velocityBins[i];
-
-			if (weight <= 0) {
-				continue;
-			}
-
-			double normalized =
-				(
-					i /
-					(double)
-					(data.velocityBins.length - 1)
-				);
-
-			double velocity =
-				normalized * 8.0;
-
-			weightedVelocity +=
-				velocity * weight;
-
-			totalWeight += weight;
-		}
-
-		if (totalWeight <= 0) {
-			return currentVelocity;
-		}
-
-		double average =
-			weightedVelocity /
-			totalWeight;
-
-		/*
-		 * Preserve the current direction of movement.
-		 */
-		if (currentVelocity < 0) {
-			average = -average;
-		}
-
-		return average;
+		data.hasPreviousLateral =
+			true;
 	}
 
 	private int getDirectionBin(
@@ -672,7 +962,9 @@ public class StationaryTracker extends AdvancedRobot {
 		}
 
 		EnemyData currentTarget =
-			enemies.get(radarTarget);
+			enemies.get(
+				radarTarget
+			);
 
 		if (currentTarget == null) {
 
@@ -774,7 +1066,10 @@ public class StationaryTracker extends AdvancedRobot {
 
 	private void updateThreatAssessment() {
 
-		for (EnemyData enemy : enemies.values()) {
+		for (
+			EnemyData enemy :
+			enemies.values()
+		) {
 
 			if (enemy == null) {
 				continue;
@@ -831,17 +1126,16 @@ public class StationaryTracker extends AdvancedRobot {
 			Math.min(
 				enemy.energy / 100.0,
 				1.0
-			);
-
-		energyScore *= 10.0;
+			) *
+			10.0;
 
 		double movementScore =
 			Math.min(
-				Math.abs(enemy.velocity) / 8.0,
+				Math.abs(enemy.velocity) /
+				8.0,
 				1.0
-			);
-
-		movementScore *= 5.0;
+			) *
+			5.0;
 
 		double aimScore = 0;
 
@@ -943,7 +1237,7 @@ public class StationaryTracker extends AdvancedRobot {
 	}
 
 	// =========================================================
-	// Stage 6 - Danger Map + Escape Movement
+	// Stage 6 - Danger Map
 	// =========================================================
 
 	private void updateMovement() {
@@ -979,7 +1273,9 @@ public class StationaryTracker extends AdvancedRobot {
 				escapeMode
 			);
 
-		moveToAngle(safestAngle);
+		moveToAngle(
+			safestAngle
+		);
 	}
 
 	private double findSafestDirection(
@@ -1115,9 +1411,8 @@ public class StationaryTracker extends AdvancedRobot {
 				1.0 -
 				distance /
 				DANGER_SCAN_DISTANCE
-			);
-
-		distanceDanger *= 40.0;
+			) *
+			40.0;
 
 		double angleToFuture =
 			Math.atan2(
@@ -1143,21 +1438,19 @@ public class StationaryTracker extends AdvancedRobot {
 			aimCone
 		) {
 
-			double aimFactor =
-				1.0 -
-				angleDifference /
-				aimCone;
-
 			aimDanger =
-				aimFactor *
+				(
+					1.0 -
+					angleDifference /
+					aimCone
+				) *
 				50.0;
 		}
 
-		double fireDanger = 0;
-
-		if (enemy.fireDetected) {
-			fireDanger = 40.0;
-		}
+		double fireDanger =
+			enemy.fireDetected
+				? 40.0
+				: 0;
 
 		double energyDanger =
 			Math.min(
@@ -1266,7 +1559,7 @@ public class StationaryTracker extends AdvancedRobot {
 	}
 
 	// =========================================================
-	// Stage 7 - Bullet / Fire Detection
+	// Stage 7 - Bullet Detection
 	// =========================================================
 
 	private void updateBulletDetection() {
@@ -1340,10 +1633,8 @@ public class StationaryTracker extends AdvancedRobot {
 
 			enemy.detectedBulletSpeed =
 				20.0 -
-				(
-					3.0 *
-					energyDrop
-				);
+				3.0 *
+				energyDrop;
 
 			lastBulletDetection =
 				getTime();
@@ -1455,10 +1746,8 @@ public class StationaryTracker extends AdvancedRobot {
 		) {
 
 			double distance =
-				(
-					DODGE_LOOKAHEAD /
-					4.0
-				) *
+				DODGE_LOOKAHEAD /
+				4.0 *
 				step;
 
 			double futureX =
@@ -1655,8 +1944,7 @@ public class StationaryTracker extends AdvancedRobot {
 				Math.toRadians(20)
 			) {
 
-				penalty +=
-					15.0;
+				penalty += 15.0;
 			}
 		}
 
@@ -1999,6 +2287,38 @@ public class StationaryTracker extends AdvancedRobot {
 	}
 
 	// =========================================================
+	// Stage 11 - GuessFactor Data
+	// =========================================================
+
+	private static class GuessFactorData {
+
+		double[] bins =
+			new double[GUESS_FACTOR_BINS];
+
+		double totalSamples;
+	}
+
+	private static class BulletWave {
+
+		double x;
+		double y;
+
+		long fireTime;
+
+		double bulletSpeed;
+		double bulletPower;
+
+		String targetName;
+
+		double directAngle;
+		double firingAngle;
+
+		double distance;
+
+		int direction;
+	}
+
+	// =========================================================
 	// Adaptive Bullet Power
 	// =========================================================
 
@@ -2029,6 +2349,7 @@ public class StationaryTracker extends AdvancedRobot {
 			}
 
 			if (ourEnergy < 20) {
+
 				power =
 					Math.min(
 						power,
@@ -2037,6 +2358,7 @@ public class StationaryTracker extends AdvancedRobot {
 			}
 
 			if (ourEnergy < 10) {
+
 				power =
 					Math.min(
 						power,
@@ -2178,6 +2500,28 @@ public class StationaryTracker extends AdvancedRobot {
 		statisticalData.remove(
 			e.getName()
 		);
+
+		guessFactorData.remove(
+			e.getName()
+		);
+
+		Iterator<BulletWave> iterator =
+			bulletWaves.iterator();
+
+		while (iterator.hasNext()) {
+
+			BulletWave wave =
+				iterator.next();
+
+			if (
+				wave.targetName.equals(
+					e.getName()
+				)
+			) {
+
+				iterator.remove();
+			}
+		}
 
 		if (
 			radarTarget != null &&
