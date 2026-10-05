@@ -1044,11 +1044,11 @@ public class MadaraV2 extends AdvancedRobot {
 	private void setNormalColors() {
 
 		setColors(
-			vermelhoArmadura,
-			pretoUchiha,
-			pretoUchiha,
-			azulSusanoo,
-			vermelhoArmadura
+			VERMELHO_ARMADURA,
+			PRETO_UCHIHA,
+			PRETO_UCHIHA,
+			AZUL_SUSANOO,
+			VERMELHO_ARMADURA
 		);
 	}
 
