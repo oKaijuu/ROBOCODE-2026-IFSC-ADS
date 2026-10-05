@@ -1204,9 +1204,12 @@ public class MadaraV3 extends AdvancedRobot {
 			}
 		}
 
-		if (includeShots && activeShots > 0) {
-			danger += shotDanger(sin, cos);
-	}
+		if (includeShots) {
+			if (activeShots > 0) {
+				danger += shotDanger(sin, cos);
+			}
+			danger += enemyWaveDanger(angle);
+		}
 
 		/* Cost of the turn needed (forward or reverse, whichever is closer). */
 		double turn =
