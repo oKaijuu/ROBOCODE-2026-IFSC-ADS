@@ -41,9 +41,13 @@ public class MadaraV2 extends AdvancedRobot {
 	private static final double MAX_SPEED = 8.0;
 
 	//Colors
-    Color vermelhoArmadura = new Color(139, 0, 0);
-    Color pretoUchiha    = new Color(25, 25, 25);   
-    Color azulSusanoo    = new Color(30, 60, 255);
+    private static final Color VERMELHO_ARMADURA = new Color(139, 0, 0);
+	private static final Color PRETO_UCHIHA = new Color(25, 25, 25);
+	private static final Color AZUL_SUSANOO = new Color(30, 60, 255);
+	
+	private static final Color ROXO_RINNEGAN_DARK = new Color(45, 0, 70);
+	private static final Color ROXO_RINNEGAN = new Color(100, 0, 150);
+	private static final Color ROXO_RINNEGAN_LIGHT = new Color(155, 40, 220);
 
 	// Tracking / threat
 	private static final int MAX_TRACKING_TIME = 40;
@@ -159,7 +163,13 @@ public class MadaraV2 extends AdvancedRobot {
 	public void run() {
 
 		// Set body, gun, radar, bullet, and scan arc colors
-		setColors(vermelhoArmadura, pretoUchiha, pretoUchiha, azulSusanoo, vermelhoArmadura);
+		setColors(
+        	VERMELHO_ARMADURA,
+        	PRETO_UCHIHA,
+        	PRETO_UCHIHA,
+        	AZUL_SUSANOO,
+        	VERMELHO_ARMADURA
+		);
 
 		setAdjustGunForRobotTurn(true);
 		setAdjustRadarForGunTurn(true);
