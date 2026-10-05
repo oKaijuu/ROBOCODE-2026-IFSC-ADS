@@ -48,6 +48,8 @@ public class MadaraV2 extends AdvancedRobot {
 	private static final Color ROXO_RINNEGAN_DARK = new Color(45, 0, 70);
 	private static final Color ROXO_RINNEGAN = new Color(100, 0, 150);
 	private static final Color ROXO_RINNEGAN_LIGHT = new Color(155, 40, 220);
+	private static final double DODGE_COLOR_ANGLE = Math.toRadians(8.0);
+	private static final long DODGE_COLOR_TICKS = 6;
 
 	// Tracking / threat
 	private static final int MAX_TRACKING_TIME = 40;
