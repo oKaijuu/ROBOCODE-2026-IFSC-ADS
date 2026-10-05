@@ -48,8 +48,8 @@ public class MadaraV2 extends AdvancedRobot {
 	private static final Color ROXO_RINNEGAN_DARK = new Color(45, 0, 70);
 	private static final Color ROXO_RINNEGAN = new Color(100, 0, 150);
 	private static final Color ROXO_RINNEGAN_LIGHT = new Color(155, 40, 220);
-	private static final double DODGE_COLOR_ANGLE = Math.toRadians(8.0);
-	private static final long DODGE_COLOR_TICKS = 6;
+	private static final double DODGE_COLOR_ANGLE = Math.toRadians(3.0);
+	private static final long DODGE_COLOR_TICKS = 8;
 
 	// Tracking / threat
 	private static final int MAX_TRACKING_TIME = 40;
@@ -80,10 +80,11 @@ public class MadaraV2 extends AdvancedRobot {
 
 	// Enemy shots
 	private static final int MAX_SHOTS = 32;
-	private static final int DODGE_TICKS = 14;
+	private static final int DODGE_TICKS = 24;
 	private static final int MAX_SHOT_SCAN_GAP = 3;
 	private static final double SHOT_HIT_RADIUS = 26.0;
-	private static final double SHOT_NEAR_RADIUS = 56.0;
+	private static final double SHOT_NEAR_RADIUS = 70.0;
+	private static final double SHOT_DODGE_DEBUG_THRESHOLD = 20.0;
 	private static final double SHOT_EXPIRE_MARGIN = 40.0;
 	private static final double MIN_BULLET_POWER = 0.1;
 	private static final double MAX_BULLET_POWER = 3.0;
@@ -1003,12 +1004,20 @@ public class MadaraV2 extends AdvancedRobot {
 
 		double bestNoShotAngle = myHeading;
 		double lowestNoShot = Double.POSITIVE_INFINITY;
+		double highestShotDanger = 0.0;
 
 		for (int i = 0; i < DANGER_SAMPLES; i++) {
 
 			double angle = myHeading + step * i;
 
 			double danger = evaluate(angle, true);
+
+			if (activeShots > 0) {
+				double currentShotDanger = shotDanger(Math.sin(angle), Math.cos(angle));
+				if (currentShotDanger > highestShotDanger) {
+					highestShotDanger = currentShotDanger;
+				}
+			}
 
 			if (danger < lowest) {
 				lowest = danger;
@@ -1025,12 +1034,17 @@ public class MadaraV2 extends AdvancedRobot {
 			}
 		}
 
-		if (
-			activeShots > 0 &&
-			Math.abs(
-				Utils.normalRelativeAngle(bestAngle - bestNoShotAngle)
-			) >= DODGE_COLOR_ANGLE
-		) {
+		double angleDifference = Math.abs(
+			Utils.normalRelativeAngle(bestAngle - bestNoShotAngle)
+		);
+
+		boolean shotForcingMovement =
+			activeShots > 0 && angleDifference >= DODGE_COLOR_ANGLE;
+
+		boolean shotCloseEnoughToMatter =
+			activeShots > 0 && highestShotDanger >= SHOT_DODGE_DEBUG_THRESHOLD;
+
+		if (shotForcingMovement || shotCloseEnoughToMatter) {
 			dodgeColorUntil = now + DODGE_COLOR_TICKS;
 		}
 
