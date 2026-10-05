@@ -606,47 +606,18 @@ public class MadaraV3 extends AdvancedRobot {
 
 	/** Iterative-free linear prediction; the enemy stops at the walls. */
 	private double linearAimAngle(EnemyData en, double bulletSpeed) {
-
 		double ex = en.x;
 		double ey = en.y;
-
 		double vx = Math.sin(en.heading) * en.velocity;
 		double vy = Math.cos(en.heading) * en.velocity;
-
-		double minX = ROBOT_RADIUS;
-		double minY = ROBOT_RADIUS;
-		double maxX = fieldW - ROBOT_RADIUS;
-		double maxY = fieldH - ROBOT_RADIUS;
-
-		for (int t = 1; t <= LINEAR_MAX_TICKS; t++) {
-
-			ex += vx;
-			ey += vy;
-
-			if (ex < minX) {
-				ex = minX;
-				vx = 0;
-			} else if (ex > maxX) {
-				ex = maxX;
-				vx = 0;
-			}
-
-			if (ey < minY) {
-				ey = minY;
-				vy = 0;
-			} else if (ey > maxY) {
-				ey = maxY;
-				vy = 0;
-			}
-
-			double dx = ex - myX;
-			double dy = ey - myY;
-
-			if (Math.sqrt(dx * dx + dy * dy) <= bulletSpeed * t) {
-				break;
-			}
+		double time = Math.hypot(ex - myX, ey - myY) / bulletSpeed;
+		for (int i = 0; i < 10; i++) {
+			ex = en.x + vx * time;
+			ey = en.y + vy * time;
+			ex = Math.max(ROBOT_RADIUS, Math.min(fieldW - ROBOT_RADIUS, ex));
+			ey = Math.max(ROBOT_RADIUS, Math.min(fieldH - ROBOT_RADIUS, ey));
+			time = Math.hypot(ex - myX, ey - myY) / bulletSpeed;
 		}
-
 		return Math.atan2(ex - myX, ey - myY);
 	}
 
