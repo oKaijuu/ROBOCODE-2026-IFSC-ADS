@@ -41,7 +41,7 @@ public class MadaraV2 extends AdvancedRobot {
 	private static final double MAX_SPEED = 8.0;
 
 	//Colors
-    	private static final Color VERMELHO_ARMADURA = new Color(139, 0, 0);
+    private static final Color VERMELHO_ARMADURA = new Color(139, 0, 0);
 	private static final Color PRETO_UCHIHA = new Color(25, 25, 25);
 	private static final Color AZUL_SUSANOO = new Color(30, 60, 255);
 	
@@ -145,6 +145,7 @@ public class MadaraV2 extends AdvancedRobot {
 	private double evadeX;
 	private double evadeY;
 	private long evadeUntil;
+	private long dodgeColorUntil;
 
 	{
 		for (int i = 0; i < MAX_SHOTS; i++) {
@@ -163,6 +164,7 @@ public class MadaraV2 extends AdvancedRobot {
 	public void run() {
 
 		// Set body, gun, radar, bullet, and scan arc colors
+
 		setColors(
         	VERMELHO_ARMADURA,
         	PRETO_UCHIHA,
@@ -170,6 +172,7 @@ public class MadaraV2 extends AdvancedRobot {
         	AZUL_SUSANOO,
         	VERMELHO_ARMADURA
 		);
+
 
 		setAdjustGunForRobotTurn(true);
 		setAdjustRadarForGunTurn(true);
@@ -996,21 +999,100 @@ public class MadaraV2 extends AdvancedRobot {
 		double bestAngle = myHeading;
 		double lowest = Double.POSITIVE_INFINITY;
 
+		double bestNoShotAngle = myHeading;
+		double lowestNoShot = Double.POSITIVE_INFINITY;
+
 		for (int i = 0; i < DANGER_SAMPLES; i++) {
 
 			double angle = myHeading + step * i;
-			double danger = evaluate(angle);
+
+			double danger = evaluate(angle, true);
 
 			if (danger < lowest) {
 				lowest = danger;
 				bestAngle = angle;
 			}
+
+			if (activeShots > 0) {
+				double dangerWithoutShots = evaluate(angle, false);
+
+				if (dangerWithoutShots < lowestNoShot) {
+					lowestNoShot = dangerWithoutShots;
+					bestNoShotAngle = angle;
+				}
+			}
+		}
+
+		if (
+			activeShots > 0 &&
+			Math.abs(
+				Utils.normalRelativeAngle(bestAngle - bestNoShotAngle)
+			) >= DODGE_COLOR_ANGLE
+		) {
+			dodgeColorUntil = now + DODGE_COLOR_TICKS;
+		}
+
+		if (now < dodgeColorUntil) {
+			setDodgeColors();
+		} else {
+			setNormalColors();
 		}
 
 		driveTo(bestAngle);
 	}
 
+	private void setNormalColors() {
+
+		setColors(
+			vermelhoArmadura,
+			pretoUchiha,
+			pretoUchiha,
+			azulSusanoo,
+			vermelhoArmadura
+		);
+	}
+
+	private void setDodgeColors() {
+
+		long phase = now % 9;
+
+		if (phase < 3) {
+
+			setColors(
+				ROXO_RINNEGAN_DARK,
+				ROXO_RINNEGAN_DARK,
+				ROXO_RINNEGAN,
+				ROXO_RINNEGAN_DARK,
+				ROXO_RINNEGAN_DARK
+			);
+
+		} else if (phase < 6) {
+
+			setColors(
+				ROXO_RINNEGAN,
+				ROXO_RINNEGAN,
+				ROXO_RINNEGAN_LIGHT,
+				ROXO_RINNEGAN_LIGHT,
+				ROXO_RINNEGAN
+			);
+
+		} else {
+
+			setColors(
+				ROXO_RINNEGAN_DARK,
+				ROXO_RINNEGAN,
+				ROXO_RINNEGAN_DARK,
+				ROXO_RINNEGAN,
+				ROXO_RINNEGAN_DARK
+			);
+		}
+	}
+
 	private double evaluate(double angle) {
+		return evaluate(angle, true);
+	}
+
+	private double evaluate(double angle, boolean includeShots) {
 
 		double sin = Math.sin(angle);
 		double cos = Math.cos(angle);
@@ -1045,9 +1127,9 @@ public class MadaraV2 extends AdvancedRobot {
 			}
 		}
 
-		if (activeShots > 0) {
+		if (includeShots && activeShots > 0) {
 			danger += shotDanger(sin, cos);
-		}
+	}
 
 		/* Cost of the turn needed (forward or reverse, whichever is closer). */
 		double turn =
