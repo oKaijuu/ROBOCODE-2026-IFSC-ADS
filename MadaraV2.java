@@ -41,7 +41,7 @@ public class MadaraV2 extends AdvancedRobot {
 	private static final double MAX_SPEED = 8.0;
 
 	//Colors
-    private static final Color VERMELHO_ARMADURA = new Color(139, 0, 0);
+    	private static final Color VERMELHO_ARMADURA = new Color(139, 0, 0);
 	private static final Color PRETO_UCHIHA = new Color(25, 25, 25);
 	private static final Color AZUL_SUSANOO = new Color(30, 60, 255);
 	
