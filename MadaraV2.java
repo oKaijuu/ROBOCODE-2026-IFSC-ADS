@@ -12,11 +12,14 @@ import robocode.util.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.awt.Color;
 
 /**
- * MadaraV1 (ex-StationaryTracker) - melee robot.
+ * MadaraV2 (ex-MadaraV1) - DangerBasedBot.
  *
- * Systems:
+ * Actual STATUS: MegaBot 
+ * 
+ * Actual systems:
  *  - Melee radar: narrow lock on the gun target + periodic full sweeps for stale enemies.
  *  - Targeting: segmented GuessFactor (distance x lateral speed) learned from real AND virtual
  *    waves, persisted across rounds (static), with a wall-aware linear fallback.
@@ -24,10 +27,8 @@ import java.util.Map;
  *    bullets projected on their real path (towards our position at fire time).
  *  - Shot detection: energy drop compensated for known sources (our hits, collisions, hits on us).
  *
- * Performance notes: no allocation in the per-tick path (pooled waves/shots, preallocated
- * buffers, index loops), no Point2D/Math.hypot, no streams/comparators, trig computed once
- * per candidate, enemy bullet table only built when a shot is in flight.
- */
+ **/
+
 public class MadaraV2 extends AdvancedRobot {
 
 	// =====================================================================
@@ -38,6 +39,11 @@ public class MadaraV2 extends AdvancedRobot {
 	private static final double HALF_PI = Math.PI / 2.0;
 	private static final double ROBOT_RADIUS = 18.0;
 	private static final double MAX_SPEED = 8.0;
+
+	//Colors
+    Color vermelhoArmadura = new Color(139, 0, 0);
+    Color pretoUchiha    = new Color(25, 25, 25);   
+    Color azulSusanoo    = new Color(30, 60, 255);
 
 	// Tracking / threat
 	private static final int MAX_TRACKING_TIME = 40;
@@ -151,6 +157,9 @@ public class MadaraV2 extends AdvancedRobot {
 
 	@Override
 	public void run() {
+
+		// Set body, gun, radar, bullet, and scan arc colors
+		setColors(vermelhoArmadura, pretoUchiha, pretoUchiha, azulSusanoo, vermelhoArmadura);
 
 		setAdjustGunForRobotTurn(true);
 		setAdjustRadarForGunTurn(true);
