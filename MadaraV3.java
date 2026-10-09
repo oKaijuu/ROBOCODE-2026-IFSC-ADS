@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.awt.Color;
+import java.io.*;
 
 /**
  * MadaraV2 (ex-MadaraV1) - DangerBasedBot.
@@ -118,6 +119,12 @@ public class MadaraV3 extends AdvancedRobot {
 
 	/** Survives across rounds (robot instances are recreated every round). */
 	private static final Map<String, GuessFactorStats> STATS = new HashMap<>();
+	private static boolean learningLoaded;
+	private static long roundsPlayed, roundsWon, bulletsFired, bulletsHit;
+	private static double damageReceived;
+	private static double adaptiveMoveDistance = MOVE_DISTANCE;
+	private static double adaptiveSurfWeight = 1.0;
+	private static final String LEARNING_FILE = "madara-v3-learning.dat";
 
 	private final Map<String, EnemyData> enemies = new HashMap<>();
 	private final ArrayList<EnemyData> enemyList = new ArrayList<>();
@@ -191,6 +198,7 @@ public class MadaraV3 extends AdvancedRobot {
 
 		fieldW = getBattleFieldWidth();
 		fieldH = getBattleFieldHeight();
+		loadLearningData();
 
 		syncState();
 		lastMoveAngle = myHeading;
@@ -533,6 +541,7 @@ public class MadaraV3 extends AdvancedRobot {
 
 			if (setFireBullet(power) != null) {
 
+				bulletsFired++;
 				addWave(en, power, absBearing, segment, direction, true);
 
 				fired = true;
@@ -950,7 +959,7 @@ public class MadaraV3 extends AdvancedRobot {
 			bin = Math.max(0, Math.min(SURF_BINS - 1, bin));
 			double proximity = 1.0 - radialError / SURF_WAVE_MARGIN;
 			double confidence = Math.min(1.0, w.owner.surfSamples / 12.0);
-			total += proximity * (SURF_BASE_DANGER + w.owner.surfStats[bin] * (0.5 + confidence));
+			total += adaptiveSurfWeight * proximity * (SURF_BASE_DANGER + w.owner.surfStats[bin] * (0.5 + confidence));
 		}
 		return total;
 	}
@@ -1174,8 +1183,8 @@ public class MadaraV3 extends AdvancedRobot {
 		double sin = Math.sin(angle);
 		double cos = Math.cos(angle);
 
-		double px = myX + sin * MOVE_DISTANCE;
-		double py = myY + cos * MOVE_DISTANCE;
+		double px = myX + sin * adaptiveMoveDistance;
+		double py = myY + cos * adaptiveMoveDistance;
 
 		double danger = wallDanger(px, py);
 
@@ -1347,7 +1356,7 @@ public class MadaraV3 extends AdvancedRobot {
 		}
 
 		setTurnRightRadians(turn);
-		setAhead(direction * MOVE_DISTANCE);
+		setAhead(direction * adaptiveMoveDistance);
 	}
 
 	// =====================================================================
@@ -1365,6 +1374,7 @@ public class MadaraV3 extends AdvancedRobot {
 			return;
 		}
 
+		bulletsHit++;
 		double p = e.getBullet().getPower();
 
 		double damage = 4.0 * p + (p > 1.0 ? 2.0 * (p - 1.0) : 0.0);
@@ -1386,6 +1396,7 @@ public class MadaraV3 extends AdvancedRobot {
 		}
 
 		/* The shooter gains 3 * power when its bullet hits. */
+		damageReceived += 4.0 * e.getPower() + (e.getPower() > 1.0 ? 2.0 * (e.getPower() - 1.0) : 0.0);
 		en.energyAdjust -= 3.0 * e.getPower();
 
 		learnEnemyWave(en);
@@ -1455,6 +1466,69 @@ public class MadaraV3 extends AdvancedRobot {
 		 * Shots already in flight stay active (they are real bullets);
 		 * STATS is kept so the learning carries to the next rounds.
 		 */
+	}
+
+
+	private void loadLearningData() {
+		if (learningLoaded) return;
+		learningLoaded = true;
+		File f = getDataFile(LEARNING_FILE);
+		if (!f.exists()) return;
+		try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+			String line;
+			while ((line = r.readLine()) != null) {
+				String[] p = line.split("\\|");
+				if (p.length >= 6 && "META".equals(p[0])) {
+					roundsPlayed = Long.parseLong(p[1]); roundsWon = Long.parseLong(p[2]);
+					bulletsFired = Long.parseLong(p[3]); bulletsHit = Long.parseLong(p[4]);
+					damageReceived = Double.parseDouble(p[5]);
+					if (p.length > 6) adaptiveMoveDistance = clamp(Double.parseDouble(p[6]), 80, 180);
+					if (p.length > 7) adaptiveSurfWeight = clamp(Double.parseDouble(p[7]), 0.5, 2.5);
+				}
+			}
+		} catch (Exception ex) { out.println("Madara: falha ao carregar aprendizado: " + ex.getMessage()); }
+	}
+
+	private void saveLearningData() {
+		try (BufferedWriter w = new BufferedWriter(new FileWriter(getDataFile(LEARNING_FILE)))) {
+			w.write("META|" + roundsPlayed + "|" + roundsWon + "|" + bulletsFired + "|" + bulletsHit
+				+ "|" + damageReceived + "|" + adaptiveMoveDistance + "|" + adaptiveSurfWeight);
+			w.newLine();
+		} catch (IOException ex) { out.println("Madara: falha ao salvar aprendizado: " + ex.getMessage()); }
+	}
+
+	private void recalibrateLearning() {
+		if (roundsPlayed < 3) return;
+		double hitRate = bulletsFired == 0 ? 0 : bulletsHit / (double) bulletsFired;
+		double damagePerRound = damageReceived / Math.max(1, roundsPlayed);
+		if (hitRate < 0.18) adaptiveMoveDistance += 2;
+		else if (hitRate > 0.35) adaptiveMoveDistance -= 1;
+		if (damagePerRound > 35) adaptiveSurfWeight += 0.08;
+		else if (damagePerRound < 15) adaptiveSurfWeight -= 0.03;
+		adaptiveMoveDistance = clamp(adaptiveMoveDistance, 80, 180);
+		adaptiveSurfWeight = clamp(adaptiveSurfWeight, 0.5, 2.5);
+	}
+
+	private static double clamp(double v, double min, double max) {
+		return Math.max(min, Math.min(max, v));
+	}
+
+	@Override
+	public void onWin(robocode.WinEvent e) {
+		roundsWon++;
+		saveLearningData();
+	}
+
+	@Override
+	public void onRoundEnded(robocode.RoundEndedEvent e) {
+		roundsPlayed++;
+		recalibrateLearning();
+		saveLearningData();
+	}
+
+	@Override
+	public void onBattleEnded(robocode.BattleEndedEvent e) {
+		saveLearningData();
 	}
 
 	// =====================================================================
