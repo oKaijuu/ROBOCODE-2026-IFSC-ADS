@@ -1478,12 +1478,21 @@ public class MadaraV3 extends AdvancedRobot {
 			String line;
 			while ((line = r.readLine()) != null) {
 				String[] p = line.split("\\|");
-				if (p.length >= 6 && "META".equals(p[0])) {
+				if (p.length >= 8 && "META".equals(p[0])) {
 					roundsPlayed = Long.parseLong(p[1]); roundsWon = Long.parseLong(p[2]);
 					bulletsFired = Long.parseLong(p[3]); bulletsHit = Long.parseLong(p[4]);
 					damageReceived = Double.parseDouble(p[5]);
-					if (p.length > 6) adaptiveMoveDistance = clamp(Double.parseDouble(p[6]), 80, 180);
-					if (p.length > 7) adaptiveSurfWeight = clamp(Double.parseDouble(p[7]), 0.5, 2.5);
+					adaptiveMoveDistance = clamp(Double.parseDouble(p[6]), 80, 180);
+					adaptiveSurfWeight = clamp(Double.parseDouble(p[7]), 0.5, 2.5);
+				} else if (p.length == 2 + SEGMENTS * (GF_BINS + 1) + GF_BINS + 1 && "GF".equals(p[0])) {
+					GuessFactorStats st = new GuessFactorStats(); int k = 2;
+					for (int seg = 0; seg < SEGMENTS; seg++) {
+						st.segTotal[seg] = Double.parseDouble(p[k++]);
+						for (int b = 0; b < GF_BINS; b++) st.segBins[seg][b] = Double.parseDouble(p[k++]);
+					}
+					st.allTotal = Double.parseDouble(p[k++]);
+					for (int b = 0; b < GF_BINS; b++) st.allBins[b] = Double.parseDouble(p[k++]);
+					STATS.put(p[1], st);
 				}
 			}
 		} catch (Exception ex) { out.println("Madara: falha ao carregar aprendizado: " + ex.getMessage()); }
@@ -1494,6 +1503,17 @@ public class MadaraV3 extends AdvancedRobot {
 			w.write("META|" + roundsPlayed + "|" + roundsWon + "|" + bulletsFired + "|" + bulletsHit
 				+ "|" + damageReceived + "|" + adaptiveMoveDistance + "|" + adaptiveSurfWeight);
 			w.newLine();
+			for (Map.Entry<String, GuessFactorStats> entry : STATS.entrySet()) {
+				GuessFactorStats st = entry.getValue();
+				StringBuilder line = new StringBuilder("GF|").append(entry.getKey());
+				for (int seg = 0; seg < SEGMENTS; seg++) {
+					line.append('|').append(st.segTotal[seg]);
+					for (int b = 0; b < GF_BINS; b++) line.append('|').append(st.segBins[seg][b]);
+				}
+				line.append('|').append(st.allTotal);
+				for (int b = 0; b < GF_BINS; b++) line.append('|').append(st.allBins[b]);
+				w.write(line.toString()); w.newLine();
+			}
 		} catch (IOException ex) { out.println("Madara: falha ao salvar aprendizado: " + ex.getMessage()); }
 	}
 
