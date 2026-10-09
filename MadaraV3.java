@@ -1473,7 +1473,10 @@ public class MadaraV3 extends AdvancedRobot {
 		if (learningLoaded) return;
 		learningLoaded = true;
 		File f = getDataFile(LEARNING_FILE);
-		if (!f.exists()) return;
+		if (!f.exists()) {
+			out.println("[MADARA-LEARNING] No saved data yet; starting with default parameters.");
+			return;
+		}
 		try (BufferedReader r = new BufferedReader(new FileReader(f))) {
 			String line;
 			while ((line = r.readLine()) != null) {
@@ -1514,19 +1517,53 @@ public class MadaraV3 extends AdvancedRobot {
 				for (int b = 0; b < GF_BINS; b++) line.append('|').append(st.allBins[b]);
 				w.write(line.toString()); w.newLine();
 			}
-		} catch (IOException ex) { out.println("Madara: falha ao salvar aprendizado: " + ex.getMessage()); }
+			out.println("[MADARA-LEARNING] Saved"
+				+ " | rounds=" + roundsPlayed
+				+ " | wins=" + roundsWon
+				+ " | GF profiles=" + STATS.size()
+				+ " | file=" + LEARNING_FILE);
+		} catch (IOException ex) {
+			out.println("[MADARA-LEARNING] SAVE ERROR: " + ex.getMessage());
+		}
 	}
 
 	private void recalibrateLearning() {
-		if (roundsPlayed < 3) return;
+		double oldMoveDistance = adaptiveMoveDistance;
+		double oldSurfWeight = adaptiveSurfWeight;
 		double hitRate = bulletsFired == 0 ? 0 : bulletsHit / (double) bulletsFired;
 		double damagePerRound = damageReceived / Math.max(1, roundsPlayed);
-		if (hitRate < 0.18) adaptiveMoveDistance += 2;
-		else if (hitRate > 0.35) adaptiveMoveDistance -= 1;
-		if (damagePerRound > 35) adaptiveSurfWeight += 0.08;
-		else if (damagePerRound < 15) adaptiveSurfWeight -= 0.03;
+
+		if (roundsPlayed >= 3) {
+			if (hitRate < 0.18) adaptiveMoveDistance += 2;
+			else if (hitRate > 0.35) adaptiveMoveDistance -= 1;
+			if (damagePerRound > 35) adaptiveSurfWeight += 0.08;
+			else if (damagePerRound < 15) adaptiveSurfWeight -= 0.03;
+		}
 		adaptiveMoveDistance = clamp(adaptiveMoveDistance, 80, 180);
 		adaptiveSurfWeight = clamp(adaptiveSurfWeight, 0.5, 2.5);
+
+		out.println("[MADARA-LEARNING] Round=" + roundsPlayed
+			+ " | Wins=" + roundsWon
+			+ " | Bullets=" + bulletsHit + "/" + bulletsFired
+			+ " | HitRate=" + formatPercent(hitRate)
+			+ " | DamageReceived/round=" + String.format(java.util.Locale.US, "%.2f", damagePerRound));
+		if (roundsPlayed < 3) {
+			out.println("[MADARA-LEARNING] Recalibration pending: need 3 rounds; current=" + roundsPlayed);
+		} else if (oldMoveDistance != adaptiveMoveDistance || oldSurfWeight != adaptiveSurfWeight) {
+			out.println("[MADARA-LEARNING] ADJUSTED"
+				+ " | MoveDistance=" + fmt(oldMoveDistance) + " -> " + fmt(adaptiveMoveDistance)
+				+ " | SurfWeight=" + fmt(oldSurfWeight) + " -> " + fmt(adaptiveSurfWeight));
+		} else {
+			out.println("[MADARA-LEARNING] No parameter change this round.");
+		}
+	}
+
+	private static String formatPercent(double value) {
+		return String.format(java.util.Locale.US, "%.1f%%", value * 100.0);
+	}
+
+	private static String fmt(double value) {
+		return String.format(java.util.Locale.US, "%.2f", value);
 	}
 
 	private static double clamp(double v, double min, double max) {
