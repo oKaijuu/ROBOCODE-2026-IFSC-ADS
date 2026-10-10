@@ -1558,12 +1558,24 @@ public class MadaraV3 extends AdvancedRobot {
 		double oldSurfWeight = adaptiveSurfWeight;
 		double hitRate = bulletsFired == 0 ? 0 : bulletsHit / (double) bulletsFired;
 		double damagePerRound = damageReceived / Math.max(1, roundsPlayed);
+		String reason = "insufficient samples";
 
-		if (bulletsFired >= 10) {
-			if (hitRate < 0.18) adaptiveMoveDistance += 2;
-			else if (hitRate > 0.35) adaptiveMoveDistance -= 1;
-			if (damagePerRound > 35) adaptiveSurfWeight += 0.08;
-			else if (damagePerRound < 15) adaptiveSurfWeight -= 0.03;
+		/*
+		 * Hit rate evaluates targeting, not movement distance. Movement is
+		 * adjusted from incoming damage; wave-surf weight follows the same signal.
+		 */
+		if (bulletsFired >= 10 && roundsPlayed >= 3) {
+			if (damagePerRound > 35.0) {
+				adaptiveMoveDistance += 4.0;
+				adaptiveSurfWeight += 0.08;
+				reason = "high incoming damage";
+			} else if (damagePerRound < 15.0) {
+				adaptiveMoveDistance -= 2.0;
+				adaptiveSurfWeight -= 0.05;
+				reason = "low incoming damage";
+			} else {
+				reason = "performance within target range";
+			}
 		}
 		adaptiveMoveDistance = clamp(adaptiveMoveDistance, 80, 180);
 		adaptiveSurfWeight = clamp(adaptiveSurfWeight, 0.5, 2.5);
@@ -1573,14 +1585,17 @@ public class MadaraV3 extends AdvancedRobot {
 			+ " | Bullets=" + bulletsHit + "/" + bulletsFired
 			+ " | HitRate=" + formatPercent(hitRate)
 			+ " | DamageReceived/round=" + String.format(java.util.Locale.US, "%.2f", damagePerRound));
-		if (bulletsFired < 10) {
-			out.println("[MADARA-LEARNING] Recalibration pending: need 10 fired bullets; current=" + bulletsFired);
+		out.println("[MADARA-LEARNING] Parameters"
+			+ " | MoveDistance=" + fmt(oldMoveDistance) + " -> " + fmt(adaptiveMoveDistance)
+			+ " | SurfWeight=" + fmt(oldSurfWeight) + " -> " + fmt(adaptiveSurfWeight)
+			+ " | Reason=" + reason
+			+ " | Limits=Move[80,180], Surf[0.5,2.5]");
+		if (bulletsFired < 10 || roundsPlayed < 3) {
+			out.println("[MADARA-LEARNING] Recalibration pending: need 3 rounds and 10 fired bullets.");
 		} else if (oldMoveDistance != adaptiveMoveDistance || oldSurfWeight != adaptiveSurfWeight) {
-			out.println("[MADARA-LEARNING] ADJUSTED"
-				+ " | MoveDistance=" + fmt(oldMoveDistance) + " -> " + fmt(adaptiveMoveDistance)
-				+ " | SurfWeight=" + fmt(oldSurfWeight) + " -> " + fmt(adaptiveSurfWeight));
+			out.println("[MADARA-LEARNING] ADJUSTED");
 		} else {
-			out.println("[MADARA-LEARNING] No parameter change this round.");
+			out.println("[MADARA-LEARNING] Parameters at limits or unchanged by performance thresholds.");
 		}
 	}
 
