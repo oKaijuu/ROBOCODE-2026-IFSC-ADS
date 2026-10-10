@@ -201,9 +201,10 @@ public class MadaraV3 extends AdvancedRobot {
 		fieldH = getBattleFieldHeight();
 		loadLearningData();
 
-		// Count and calibrate at round start so learning does not depend on end callbacks.
+		// Experiment: disable adaptive movement recalibration to isolate movement quality.
 		roundsPlayed++;
-		recalibrateLearning();
+		adaptiveMoveDistance = MOVE_DISTANCE;
+		adaptiveSurfWeight = 1.0;
 		saveLearningData(false);
 
 		syncState();
@@ -1211,13 +1212,12 @@ public class MadaraV3 extends AdvancedRobot {
 			danger += enemyDanger(threatBuf[i], px, py);
 		}
 
-		if (threatCount >= 3) {
-
+		if (threatCount >= 2) {
+			// Stronger melee spacing helps avoid drifting into a cluster of enemies.
 			double dx = px - clusterX;
 			double dy = py - clusterY;
-
-			danger -=
-				Math.min(Math.sqrt(dx * dx + dy * dy) / 100.0, 20.0);
+			double clusterDistance = Math.sqrt(dx * dx + dy * dy);
+			danger -= Math.min(clusterDistance / 65.0, 36.0);
 		}
 
 		if (now < evadeUntil) {
@@ -1236,7 +1236,7 @@ public class MadaraV3 extends AdvancedRobot {
 			if (activeShots > 0) {
 				danger += shotDanger(sin, cos);
 			}
-			danger += enemyWaveDanger(angle);
+			// Experimental ablation: inferred wave danger is disabled while tracked bullet danger remains active.
 		}
 
 		/* Cost of the turn needed (forward or reverse, whichever is closer). */
