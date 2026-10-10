@@ -125,6 +125,7 @@ public class MadaraV3 extends AdvancedRobot {
 	private static double adaptiveMoveDistance = MOVE_DISTANCE;
 	private static double adaptiveSurfWeight = 1.0;
 	private static final String LEARNING_FILE = "madara-v3-learning.dat";
+	private long lastLearningSaveTime = -100;
 
 	private final Map<String, EnemyData> enemies = new HashMap<>();
 	private final ArrayList<EnemyData> enemyList = new ArrayList<>();
@@ -200,6 +201,11 @@ public class MadaraV3 extends AdvancedRobot {
 		fieldH = getBattleFieldHeight();
 		loadLearningData();
 
+		// Count and calibrate at round start so learning does not depend on end callbacks.
+		roundsPlayed++;
+		recalibrateLearning();
+		saveLearningData(false);
+
 		syncState();
 		lastMoveAngle = myHeading;
 
@@ -211,6 +217,12 @@ public class MadaraV3 extends AdvancedRobot {
 			updateMovement();
 
 			execute();
+
+			// Persist learning periodically in case the robot is destroyed before round end.
+			if (now - lastLearningSaveTime >= 100) {
+				saveLearningData(false);
+				lastLearningSaveTime = now;
+			}
 		}
 	}
 
@@ -804,7 +816,14 @@ public class MadaraV3 extends AdvancedRobot {
 				)
 			);
 
-		stats.add(w.segment, guessFactorToBin(guessFactor), w.weight);
+		int learnedBin = guessFactorToBin(guessFactor);
+		stats.add(w.segment, learnedBin, w.weight);
+		out.println("[MADARA-LEARNING] GF update | enemy=" + en.name
+			+ " | segment=" + w.segment
+			+ " | GF=" + fmt(guessFactor)
+			+ " | bin=" + learnedBin
+			+ " | weight=" + fmt(w.weight)
+			+ " | samples=" + fmt(stats.allTotal));
 	}
 
 	private void expireWaves() {
@@ -1502,6 +1521,10 @@ public class MadaraV3 extends AdvancedRobot {
 	}
 
 	private void saveLearningData() {
+		saveLearningData(true);
+	}
+
+	private void saveLearningData(boolean log) {
 		try (BufferedWriter w = new BufferedWriter(new FileWriter(getDataFile(LEARNING_FILE)))) {
 			w.write("META|" + roundsPlayed + "|" + roundsWon + "|" + bulletsFired + "|" + bulletsHit
 				+ "|" + damageReceived + "|" + adaptiveMoveDistance + "|" + adaptiveSurfWeight);
@@ -1517,11 +1540,14 @@ public class MadaraV3 extends AdvancedRobot {
 				for (int b = 0; b < GF_BINS; b++) line.append('|').append(st.allBins[b]);
 				w.write(line.toString()); w.newLine();
 			}
-			out.println("[MADARA-LEARNING] Saved"
-				+ " | rounds=" + roundsPlayed
-				+ " | wins=" + roundsWon
-				+ " | GF profiles=" + STATS.size()
-				+ " | file=" + LEARNING_FILE);
+			if (log) {
+				out.println("[MADARA-LEARNING] Saved"
+					+ " | rounds=" + roundsPlayed
+					+ " | wins=" + roundsWon
+					+ " | bullets=" + bulletsHit + "/" + bulletsFired
+					+ " | GF profiles=" + STATS.size()
+					+ " | file=" + getDataFile(LEARNING_FILE).getAbsolutePath());
+			}
 		} catch (IOException ex) {
 			out.println("[MADARA-LEARNING] SAVE ERROR: " + ex.getMessage());
 		}
@@ -1533,7 +1559,7 @@ public class MadaraV3 extends AdvancedRobot {
 		double hitRate = bulletsFired == 0 ? 0 : bulletsHit / (double) bulletsFired;
 		double damagePerRound = damageReceived / Math.max(1, roundsPlayed);
 
-		if (roundsPlayed >= 3) {
+		if (bulletsFired >= 10) {
 			if (hitRate < 0.18) adaptiveMoveDistance += 2;
 			else if (hitRate > 0.35) adaptiveMoveDistance -= 1;
 			if (damagePerRound > 35) adaptiveSurfWeight += 0.08;
@@ -1547,8 +1573,8 @@ public class MadaraV3 extends AdvancedRobot {
 			+ " | Bullets=" + bulletsHit + "/" + bulletsFired
 			+ " | HitRate=" + formatPercent(hitRate)
 			+ " | DamageReceived/round=" + String.format(java.util.Locale.US, "%.2f", damagePerRound));
-		if (roundsPlayed < 3) {
-			out.println("[MADARA-LEARNING] Recalibration pending: need 3 rounds; current=" + roundsPlayed);
+		if (bulletsFired < 10) {
+			out.println("[MADARA-LEARNING] Recalibration pending: need 10 fired bullets; current=" + bulletsFired);
 		} else if (oldMoveDistance != adaptiveMoveDistance || oldSurfWeight != adaptiveSurfWeight) {
 			out.println("[MADARA-LEARNING] ADJUSTED"
 				+ " | MoveDistance=" + fmt(oldMoveDistance) + " -> " + fmt(adaptiveMoveDistance)
@@ -1578,8 +1604,7 @@ public class MadaraV3 extends AdvancedRobot {
 
 	@Override
 	public void onRoundEnded(robocode.RoundEndedEvent e) {
-		roundsPlayed++;
-		recalibrateLearning();
+		// Round count is incremented at the next run() start; save whatever was learned.
 		saveLearningData();
 	}
 
