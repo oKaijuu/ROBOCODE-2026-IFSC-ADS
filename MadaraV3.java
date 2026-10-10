@@ -17,7 +17,7 @@ import java.awt.Color;
 import java.io.*;
 
 /**
- * MadaraV2 (ex-MadaraV1) - DangerBasedBot.
+ * MadaraV3 (ex-MadaraV1) - DangerBasedBot.
  *
  * Actual STATUS: MegaBot 
  * 
