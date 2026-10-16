@@ -128,6 +128,7 @@ public class MadaraV3 extends AdvancedRobot {
 	private long roundDodgeTicks, roundShotThreatTicks, roundWallHits, roundRobotCollisions;
 	private long roundGfUpdates;
 	private boolean roundSummaryPrinted;
+	private boolean roundWon;
 	private static double adaptiveMoveDistance = MOVE_DISTANCE;
 	private static double adaptiveSurfWeight = 1.0;
 	private static final String LEARNING_FILE = "madara-v3-learning.dat";
@@ -1532,7 +1533,7 @@ public class MadaraV3 extends AdvancedRobot {
 		double hitRate = roundBulletsFired == 0 ? 0 : roundBulletsHit / (double) roundBulletsFired;
 		out.println("[MADARA-P0] ROUND SUMMARY"
 			+ " | ticks=" + getTime()
-			+ " | won=" + (roundsWon > 0 && roundsWon >= roundsPlayed ? "yes" : "check battle result")
+			+ " | won=" + (roundWon ? "yes" : "no")
 			+ " | bullets=" + roundBulletsHit + "/" + roundBulletsFired
 			+ " | hitRate=" + formatPercent(hitRate)
 			+ " | damageDealt=" + fmt(roundDamageDealt)
@@ -1683,6 +1684,7 @@ public class MadaraV3 extends AdvancedRobot {
 	@Override
 	public void onWin(robocode.WinEvent e) {
 		roundsWon++;
+		roundWon = true;
 		saveLearningData();
 	}
 
