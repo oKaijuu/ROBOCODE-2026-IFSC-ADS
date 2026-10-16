@@ -121,7 +121,14 @@ public class MadaraV3 extends AdvancedRobot {
 	private static final Map<String, GuessFactorStats> STATS = new HashMap<>();
 	private static boolean learningLoaded;
 	private static long roundsPlayed, roundsWon, bulletsFired, bulletsHit;
-	private static double damageReceived;
+	private static double damageReceived, damageDealt;
+	private long roundBulletsFired, roundBulletsHit;
+	private double roundDamageDealt, roundDamageReceived;
+	private long roundShotDetections, roundShotRejectedGap, roundShotRejectedPower;
+	private long roundDodgeTicks, roundShotThreatTicks, roundWallHits, roundRobotCollisions;
+	private long roundGfUpdates;
+	private boolean roundSummaryPrinted;
+	private boolean roundWon;
 	private static double adaptiveMoveDistance = MOVE_DISTANCE;
 	private static double adaptiveSurfWeight = 1.0;
 	private static final String LEARNING_FILE = "madara-v3-learning.dat";
@@ -201,9 +208,10 @@ public class MadaraV3 extends AdvancedRobot {
 		fieldH = getBattleFieldHeight();
 		loadLearningData();
 
-		// Count and calibrate at round start so learning does not depend on end callbacks.
+		// Experiment: disable adaptive movement recalibration to isolate movement quality.
 		roundsPlayed++;
-		recalibrateLearning();
+		adaptiveMoveDistance = MOVE_DISTANCE;
+		adaptiveSurfWeight = 1.0;
 		saveLearningData(false);
 
 		syncState();
@@ -220,6 +228,7 @@ public class MadaraV3 extends AdvancedRobot {
 
 			// Persist learning periodically in case the robot is destroyed before round end.
 			if (now - lastLearningSaveTime >= 100) {
+				logRuntimeDiagnostics();
 				saveLearningData(false);
 				lastLearningSaveTime = now;
 			}
@@ -554,6 +563,7 @@ public class MadaraV3 extends AdvancedRobot {
 			if (setFireBullet(power) != null) {
 
 				bulletsFired++;
+				roundBulletsFired++;
 				addWave(en, power, absBearing, segment, direction, true);
 
 				fired = true;
@@ -818,6 +828,7 @@ public class MadaraV3 extends AdvancedRobot {
 
 		int learnedBin = guessFactorToBin(guessFactor);
 		stats.add(w.segment, learnedBin, w.weight);
+		roundGfUpdates++;
 		out.println("[MADARA-LEARNING] GF update | enemy=" + en.name
 			+ " | segment=" + w.segment
 			+ " | GF=" + fmt(guessFactor)
@@ -854,6 +865,7 @@ public class MadaraV3 extends AdvancedRobot {
 		}
 
 		if (now - en.prevScanTime > MAX_SHOT_SCAN_GAP) {
+			roundShotRejectedGap++;
 			return;
 		}
 
@@ -863,9 +875,11 @@ public class MadaraV3 extends AdvancedRobot {
 			drop < MIN_BULLET_POWER - ENERGY_EPS ||
 			drop > MAX_BULLET_POWER + ENERGY_EPS
 		) {
+			roundShotRejectedPower++;
 			return;
 		}
 
+		roundShotDetections++;
 		createShot(en, drop);
 		createEnemyWave(en, drop);
 	}
@@ -1133,7 +1147,11 @@ public class MadaraV3 extends AdvancedRobot {
 		boolean shotCloseEnoughToMatter =
 			activeShots > 0 && highestShotDanger >= SHOT_DODGE_DEBUG_THRESHOLD;
 
+		if (activeShots > 0 && highestShotDanger >= SHOT_DODGE_DEBUG_THRESHOLD) {
+			roundShotThreatTicks++;
+		}
 		if (shotForcingMovement || shotCloseEnoughToMatter) {
+			roundDodgeTicks++;
 			dodgeColorUntil = now + DODGE_COLOR_TICKS;
 		}
 
@@ -1211,13 +1229,12 @@ public class MadaraV3 extends AdvancedRobot {
 			danger += enemyDanger(threatBuf[i], px, py);
 		}
 
-		if (threatCount >= 3) {
-
+		if (threatCount >= 2) {
+			// Stronger melee spacing helps avoid drifting into a cluster of enemies.
 			double dx = px - clusterX;
 			double dy = py - clusterY;
-
-			danger -=
-				Math.min(Math.sqrt(dx * dx + dy * dy) / 100.0, 20.0);
+			double clusterDistance = Math.sqrt(dx * dx + dy * dy);
+			danger -= Math.min(clusterDistance / 65.0, 36.0);
 		}
 
 		if (now < evadeUntil) {
@@ -1236,7 +1253,7 @@ public class MadaraV3 extends AdvancedRobot {
 			if (activeShots > 0) {
 				danger += shotDanger(sin, cos);
 			}
-			danger += enemyWaveDanger(angle);
+			// Experimental ablation: inferred wave danger is disabled while tracked bullet danger remains active.
 		}
 
 		/* Cost of the turn needed (forward or reverse, whichever is closer). */
@@ -1386,17 +1403,19 @@ public class MadaraV3 extends AdvancedRobot {
 	public void onBulletHit(BulletHitEvent e) {
 
 		syncState();
+		bulletsHit++;
+		roundBulletsHit++;
+
+		double p = e.getBullet().getPower();
+		double damage = 4.0 * p + (p > 1.0 ? 2.0 * (p - 1.0) : 0.0);
+		damageDealt += damage;
+		roundDamageDealt += damage;
 
 		EnemyData en = enemies.get(e.getName());
 
 		if (en == null) {
 			return;
 		}
-
-		bulletsHit++;
-		double p = e.getBullet().getPower();
-
-		double damage = 4.0 * p + (p > 1.0 ? 2.0 * (p - 1.0) : 0.0);
 
 		if (!cancelRecentShot(en, damage)) {
 			en.energyAdjust += damage;
@@ -1410,12 +1429,15 @@ public class MadaraV3 extends AdvancedRobot {
 
 		EnemyData en = enemies.get(e.getName());
 
+		double damage = 4.0 * e.getPower() + (e.getPower() > 1.0 ? 2.0 * (e.getPower() - 1.0) : 0.0);
+		damageReceived += damage;
+		roundDamageReceived += damage;
+
 		if (en == null) {
 			return;
 		}
 
 		/* The shooter gains 3 * power when its bullet hits. */
-		damageReceived += 4.0 * e.getPower() + (e.getPower() > 1.0 ? 2.0 * (e.getPower() - 1.0) : 0.0);
 		en.energyAdjust -= 3.0 * e.getPower();
 
 		learnEnemyWave(en);
@@ -1426,6 +1448,7 @@ public class MadaraV3 extends AdvancedRobot {
 	public void onHitRobot(HitRobotEvent e) {
 
 		syncState();
+		roundRobotCollisions++;
 
 		EnemyData en = enemies.get(e.getName());
 
@@ -1448,6 +1471,7 @@ public class MadaraV3 extends AdvancedRobot {
 	public void onHitWall(HitWallEvent e) {
 
 		syncState();
+		roundWallHits++;
 
 		lastMoveAngle =
 			Math.atan2(fieldW / 2.0 - myX, fieldH / 2.0 - myY);
@@ -1488,6 +1512,44 @@ public class MadaraV3 extends AdvancedRobot {
 	}
 
 
+
+	private void logRuntimeDiagnostics() {
+		out.println("[MADARA-P0] TICK"
+			+ " | t=" + now
+			+ " | enemies=" + enemyList.size()
+			+ " | threats=" + threatCount
+			+ " | target=" + (gunTarget == null ? "none" : gunTarget.name)
+			+ " | shots=" + activeShots
+			+ " | waves=" + enemyWaveCount
+			+ " | moveDistance=" + fmt(adaptiveMoveDistance)
+			+ " | surfWeight=" + fmt(adaptiveSurfWeight)
+			+ " | dodgeTicks=" + roundDodgeTicks
+			+ " | shotDetections=" + roundShotDetections);
+	}
+
+	private void logRoundDiagnostics() {
+		if (roundSummaryPrinted) return;
+		roundSummaryPrinted = true;
+		double hitRate = roundBulletsFired == 0 ? 0 : roundBulletsHit / (double) roundBulletsFired;
+		out.println("[MADARA-P0] ROUND SUMMARY"
+			+ " | ticks=" + getTime()
+			+ " | won=" + (roundWon ? "yes" : "no")
+			+ " | bullets=" + roundBulletsHit + "/" + roundBulletsFired
+			+ " | hitRate=" + formatPercent(hitRate)
+			+ " | damageDealt=" + fmt(roundDamageDealt)
+			+ " | damageReceived=" + fmt(roundDamageReceived)
+			+ " | shotDetections=" + roundShotDetections
+			+ " | rejectedGap=" + roundShotRejectedGap
+			+ " | rejectedPower=" + roundShotRejectedPower
+			+ " | dodgeTicks=" + roundDodgeTicks
+			+ " | shotThreatTicks=" + roundShotThreatTicks
+			+ " | wallHits=" + roundWallHits
+			+ " | robotCollisions=" + roundRobotCollisions
+			+ " | gfUpdates=" + roundGfUpdates
+			+ " | moveDistance=" + fmt(adaptiveMoveDistance)
+			+ " | surfWeight=" + fmt(adaptiveSurfWeight));
+	}
+
 	private void loadLearningData() {
 		if (learningLoaded) return;
 		learningLoaded = true;
@@ -1504,6 +1566,7 @@ public class MadaraV3 extends AdvancedRobot {
 					roundsPlayed = Long.parseLong(p[1]); roundsWon = Long.parseLong(p[2]);
 					bulletsFired = Long.parseLong(p[3]); bulletsHit = Long.parseLong(p[4]);
 					damageReceived = Double.parseDouble(p[5]);
+					if (p.length >= 9) damageDealt = Double.parseDouble(p[8]);
 					adaptiveMoveDistance = clamp(Double.parseDouble(p[6]), 80, 180);
 					adaptiveSurfWeight = clamp(Double.parseDouble(p[7]), 0.5, 2.5);
 				} else if (p.length == 2 + SEGMENTS * (GF_BINS + 1) + GF_BINS + 1 && "GF".equals(p[0])) {
@@ -1527,7 +1590,8 @@ public class MadaraV3 extends AdvancedRobot {
 	private void saveLearningData(boolean log) {
 		try (BufferedWriter w = new BufferedWriter(new FileWriter(getDataFile(LEARNING_FILE)))) {
 			w.write("META|" + roundsPlayed + "|" + roundsWon + "|" + bulletsFired + "|" + bulletsHit
-				+ "|" + damageReceived + "|" + adaptiveMoveDistance + "|" + adaptiveSurfWeight);
+				+ "|" + damageReceived + "|" + adaptiveMoveDistance + "|" + adaptiveSurfWeight
+				+ "|" + damageDealt);
 			w.newLine();
 			for (Map.Entry<String, GuessFactorStats> entry : STATS.entrySet()) {
 				GuessFactorStats st = entry.getValue();
@@ -1545,6 +1609,8 @@ public class MadaraV3 extends AdvancedRobot {
 					+ " | rounds=" + roundsPlayed
 					+ " | wins=" + roundsWon
 					+ " | bullets=" + bulletsHit + "/" + bulletsFired
+					+ " | damageDealt=" + fmt(damageDealt)
+					+ " | damageReceived=" + fmt(damageReceived)
 					+ " | GF profiles=" + STATS.size()
 					+ " | file=" + getDataFile(LEARNING_FILE).getAbsolutePath());
 			}
@@ -1580,10 +1646,14 @@ public class MadaraV3 extends AdvancedRobot {
 		adaptiveMoveDistance = clamp(adaptiveMoveDistance, 80, 180);
 		adaptiveSurfWeight = clamp(adaptiveSurfWeight, 0.5, 2.5);
 
-		out.println("[MADARA-LEARNING] Round=" + roundsPlayed
+		out.println("[MADARA-LEARNING] Persistent"
+			+ " | Rounds=" + roundsPlayed
 			+ " | Wins=" + roundsWon
+			+ " | WinRate=" + formatPercent(roundsPlayed == 0 ? 0 : roundsWon / (double) roundsPlayed)
 			+ " | Bullets=" + bulletsHit + "/" + bulletsFired
 			+ " | HitRate=" + formatPercent(hitRate)
+			+ " | DamageDealt=" + fmt(damageDealt)
+			+ " | DamageReceived=" + fmt(damageReceived)
 			+ " | DamageReceived/round=" + String.format(java.util.Locale.US, "%.2f", damagePerRound));
 		out.println("[MADARA-LEARNING] Parameters"
 			+ " | MoveDistance=" + fmt(oldMoveDistance) + " -> " + fmt(adaptiveMoveDistance)
@@ -1614,17 +1684,27 @@ public class MadaraV3 extends AdvancedRobot {
 	@Override
 	public void onWin(robocode.WinEvent e) {
 		roundsWon++;
+		roundWon = true;
 		saveLearningData();
 	}
 
 	@Override
 	public void onRoundEnded(robocode.RoundEndedEvent e) {
 		// Round count is incremented at the next run() start; save whatever was learned.
+		logRoundDiagnostics();
 		saveLearningData();
 	}
 
 	@Override
 	public void onBattleEnded(robocode.BattleEndedEvent e) {
+		logRoundDiagnostics();
+		out.println("[MADARA-P0] BATTLE SUMMARY | rounds=" + roundsPlayed
+			+ " | wins=" + roundsWon
+			+ " | winRate=" + formatPercent(roundsPlayed == 0 ? 0 : roundsWon / (double) roundsPlayed)
+			+ " | bullets=" + bulletsHit + "/" + bulletsFired
+			+ " | hitRate=" + formatPercent(bulletsFired == 0 ? 0 : bulletsHit / (double) bulletsFired)
+			+ " | damageDealt=" + fmt(damageDealt)
+			+ " | damageReceived=" + fmt(damageReceived));
 		saveLearningData();
 	}
 
