@@ -34,29 +34,31 @@ Each version has its own branch so its source can be inspected and compared with
 
 <table>
   <tr>
-    <td width="25%" align="center">
-      <img src="https://media1.tenor.com/m/EIUK28UjRqUAAAAC/china-artillery.gif" width="220" height="124" alt="StationaryTracker animation" />
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/EIUK28UjRqUAAAAC/china-artillery.gif" width="320" height="180" alt="StationaryTracker animation" />
       <h3>StationaryTracker</h3>
       <strong>Original baseline</strong>
       <p>Starting point for performance comparisons and the project's first robot.</p>
       <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker">Open branch ↗</a>
     </td>
-    <td width="25%" align="center">
-      <img src="https://media1.tenor.com/m/xwKNvNW00NEAAAAC/madara.gif" width="220" height="124" alt="Madara V1 animation" />
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/xwKNvNW00NEAAAAC/madara.gif" width="320" height="180" alt="Madara V1 animation" />
       <h3>Madara V1</h3>
       <strong>First generation</strong>
       <p>The first Madara implementation, kept separate for direct comparison.</p>
       <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1">Open branch ↗</a>
     </td>
-    <td width="25%" align="center">
-      <img src="https://media1.tenor.com/m/xaurczvDhkwAAAAd/naruto-uchiha-madara.gif" width="220" height="124" alt="Madara V2 animation" />
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/xaurczvDhkwAAAAd/naruto-uchiha-madara.gif" width="320" height="180" alt="Madara V2 animation" />
       <h3>Madara V2</h3>
       <strong>Second generation</strong>
       <p>A separate iteration for tracking changes from the V1 design.</p>
       <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2">Open branch ↗</a>
     </td>
-    <td width="25%" align="center">
-      <img src="https://media1.tenor.com/m/EpgxcRD1ydsAAAAd/madara-uchiha.gif" width="220" height="124" alt="Madara V3 animation" />
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/EpgxcRD1ydsAAAAd/madara-uchiha.gif" width="320" height="180" alt="Madara V3 animation" />
       <h3>Madara V3</h3>
       <strong>Learning & experimentation</strong>
       <p>Includes its configuration and persisted learning data.</p>
@@ -123,29 +125,31 @@ Cada versão possui sua própria branch para permitir inspeção e comparação 
 
 <table>
   <tr>
-    <td width="25%" align="center">
-      <img src="https://media1.tenor.com/m/EIUK28UjRqUAAAAC/china-artillery.gif" width="220" height="124" alt="Animação do StationaryTracker" />
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/EIUK28UjRqUAAAAC/china-artillery.gif" width="320" height="180" alt="Animação do StationaryTracker" />
       <h3>StationaryTracker</h3>
       <strong>Referência original</strong>
       <p>Ponto de partida para comparações de desempenho e primeiro robô do projeto.</p>
       <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker">Abrir branch ↗</a>
     </td>
-    <td width="25%" align="center">
-      <img src="https://media1.tenor.com/m/xwKNvNW00NEAAAAC/madara.gif" width="220" height="124" alt="Animação do Madara V1" />
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/xwKNvNW00NEAAAAC/madara.gif" width="320" height="180" alt="Animação do Madara V1" />
       <h3>Madara V1</h3>
       <strong>Primeira geração</strong>
       <p>Primeira implementação do Madara, mantida separada para comparação direta.</p>
       <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1">Abrir branch ↗</a>
     </td>
-    <td width="25%" align="center">
-      <img src="https://media1.tenor.com/m/xaurczvDhkwAAAAd/naruto-uchiha-madara.gif" width="220" height="124" alt="Animação do Madara V2" />
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/xaurczvDhkwAAAAd/naruto-uchiha-madara.gif" width="320" height="180" alt="Animação do Madara V2" />
       <h3>Madara V2</h3>
       <strong>Segunda geração</strong>
       <p>Iteração separada para acompanhar as mudanças em relação ao projeto V1.</p>
       <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2">Abrir branch ↗</a>
     </td>
-    <td width="25%" align="center">
-      <img src="https://media1.tenor.com/m/EpgxcRD1ydsAAAAd/madara-uchiha.gif" width="220" height="124" alt="Animação do Madara V3" />
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/EpgxcRD1ydsAAAAd/madara-uchiha.gif" width="320" height="180" alt="Animação do Madara V3" />
       <h3>Madara V3</h3>
       <strong>Aprendizado e experimentação</strong>
       <p>Inclui sua configuração e os dados de aprendizado persistidos.</p>
