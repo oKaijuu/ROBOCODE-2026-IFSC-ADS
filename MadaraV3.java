@@ -1667,26 +1667,68 @@ public class MadaraV3 extends AdvancedRobot {
 	}
 
 	private void recalibrateLearning() {
-		double oldMoveDistance = adaptiveMoveDistance, oldSurfWeight = adaptiveSurfWeight;
-		String reason = "waiting for 5 completed rounds";
-		if (ROUND_HISTORY.size() >= ROUND_HISTORY_LIMIT) {
-			long fired = 0, hits = 0;
-			double avgReceived = 0.0, avgDealt = 0.0, winRate = 0.0;
-			for (RoundSample sample : ROUND_HISTORY) {
-				fired += sample.bulletsFired; hits += sample.bulletsHit;
-				avgReceived += sample.damageReceived; avgDealt += sample.damageDealt;
-				if (sample.won) winRate++;
-			}
-			avgReceived /= ROUND_HISTORY.size(); avgDealt /= ROUND_HISTORY.size(); winRate /= ROUND_HISTORY.size();
-			if (fired >= 30) {
-				double hitRate = hits / (double) fired;
-				if (avgReceived > 30.0 && avgReceived > avgDealt * 0.8) {
-					adaptiveMoveDistance += 3.0; adaptiveSurfWeight += 0.05; reason = "5-round defensive pressure";
-				} else if (avgReceived < 12.0 && avgDealt > avgReceived * 1.2 && winRate >= 0.4) {
-					adaptiveMoveDistance -= 1.0; adaptiveSurfWeight -= 0.02; reason = "5-round stable advantage";
-				} else reason = "5-round window stable; hitRate=" + formatPercent(hitRate);
-			} else reason = "insufficient 5-round shot sample";
+		// Evaluate non-overlapping five-round batches instead of reacting to the same
+		// rolling window after every round. This prevents repeated increases from
+		// pushing parameters to their caps without fresh evidence.
+		if (roundsPlayed % ROUND_HISTORY_LIMIT != 0) {
+			return;
 		}
+
+		double oldMoveDistance = adaptiveMoveDistance, oldSurfWeight = adaptiveSurfWeight;
+		String reason = "insufficient 5-round sample";
+		if (ROUND_HISTORY.size() >= ROUND_HISTORY_LIMIT) {
+			long fired = 0, hits = 0, wallHits = 0;
+			double avgReceived = 0.0, avgDealt = 0.0;
+			for (RoundSample sample : ROUND_HISTORY) {
+				fired += sample.bulletsFired;
+				hits += sample.bulletsHit;
+				wallHits += sample.wallHits;
+				avgReceived += sample.damageReceived;
+				avgDealt += sample.damageDealt;
+			}
+			avgReceived /= ROUND_HISTORY.size();
+			avgDealt /= ROUND_HISTORY.size();
+			double avgWallHits = wallHits / (double) ROUND_HISTORY.size();
+			double hitRate = fired == 0 ? 0.0 : hits / (double) fired;
+
+			if (fired < 30) {
+				reason = "insufficient shot sample; no parameter changes";
+			} else if (avgWallHits >= 0.2) {
+				// Longer movement projections can increase wall pressure; correct this first.
+				adaptiveMoveDistance -= 5.0;
+				reason = "wall collisions; reduce movement projection";
+			} else if (avgReceived > 20.0 && avgReceived > avgDealt * 1.10) {
+				adaptiveMoveDistance += 2.0;
+				reason = "sustained damage pressure";
+			} else if (avgReceived < 20.0 && avgDealt > avgReceived * 1.15) {
+				adaptiveMoveDistance -= 2.0;
+				reason = "sustained damage advantage; test shorter movement";
+			} else {
+				reason = "balanced window; hold movement parameters";
+			}
+
+			// Surf weight is only adjusted when the robot has enough real wave-learning
+			// evidence. Sparse surf-learning data must not drive it toward either cap.
+			double surfEvidence = 0.0;
+			for (SurfStats stats : SURF_STATS.values()) {
+				surfEvidence += stats.samples;
+			}
+			if (fired >= 30 && surfEvidence >= 20.0) {
+				if (avgReceived > 20.0 && avgReceived > avgDealt * 1.10) {
+					adaptiveSurfWeight += 0.05;
+				} else if (avgReceived < 20.0 && avgDealt > avgReceived * 1.15) {
+					adaptiveSurfWeight -= 0.05;
+				}
+			} else if (surfEvidence < 20.0) {
+				reason += "; surf weight held (insufficient surf evidence)";
+			}
+
+			reason += "; hitRate=" + formatPercent(hitRate)
+				+ "; avgWallHits=" + fmt(avgWallHits)
+				+ "; surfEvidence=" + fmt(surfEvidence);
+		}
+
+		// Keep the original safety bounds until controlled battles prove wider bounds help.
 		adaptiveMoveDistance = clamp(adaptiveMoveDistance, 80, 180);
 		adaptiveSurfWeight = clamp(adaptiveSurfWeight, 0.5, 2.5);
 		out.println("[MADARA-LEARNING] Recalibration | window=" + ROUND_HISTORY.size()
