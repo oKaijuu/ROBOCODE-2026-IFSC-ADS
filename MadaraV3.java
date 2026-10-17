@@ -214,6 +214,7 @@ public class MadaraV3 extends AdvancedRobot {
 		fieldH = getBattleFieldHeight();
 		loadLearningData();
 
+		out.println("[MADARA-AI-LOG] path=" + getDataFile(AI_LOG_FILE).getAbsolutePath());
 		roundsPlayed++;
 		logAiEvent("round_start", "moveDistance=" + fmt(adaptiveMoveDistance) + "|surfWeight=" + fmt(adaptiveSurfWeight));
 		saveLearningData(false);
