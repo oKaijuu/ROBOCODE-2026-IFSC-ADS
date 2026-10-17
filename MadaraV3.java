@@ -119,6 +119,9 @@ public class MadaraV3 extends AdvancedRobot {
 
 	/** Survives across rounds (robot instances are recreated every round). */
 	private static final Map<String, GuessFactorStats> STATS = new HashMap<>();
+	private static final Map<String, SurfStats> SURF_STATS = new HashMap<>();
+	private static final ArrayList<RoundSample> ROUND_HISTORY = new ArrayList<>();
+	private static final int ROUND_HISTORY_LIMIT = 5;
 	private static boolean learningLoaded;
 	private static long roundsPlayed, roundsWon, bulletsFired, bulletsHit;
 	private static double damageReceived, damageDealt;
@@ -129,9 +132,12 @@ public class MadaraV3 extends AdvancedRobot {
 	private long roundGfUpdates;
 	private boolean roundSummaryPrinted;
 	private boolean roundWon;
+	private boolean roundSampleRecorded;
 	private static double adaptiveMoveDistance = MOVE_DISTANCE;
 	private static double adaptiveSurfWeight = 1.0;
 	private static final String LEARNING_FILE = "madara-v3-learning.dat";
+	private static final String AI_LOG_FILE = "madara-v3-ai.jsonl";
+	private static final int LEARNING_FORMAT_VERSION = 2;
 	private long lastLearningSaveTime = -100;
 
 	private final Map<String, EnemyData> enemies = new HashMap<>();
@@ -208,10 +214,8 @@ public class MadaraV3 extends AdvancedRobot {
 		fieldH = getBattleFieldHeight();
 		loadLearningData();
 
-		// Experiment: disable adaptive movement recalibration to isolate movement quality.
 		roundsPlayed++;
-		adaptiveMoveDistance = MOVE_DISTANCE;
-		adaptiveSurfWeight = 1.0;
+		logAiEvent("round_start", "moveDistance=" + fmt(adaptiveMoveDistance) + "|surfWeight=" + fmt(adaptiveSurfWeight));
 		saveLearningData(false);
 
 		syncState();
@@ -965,9 +969,10 @@ public class MadaraV3 extends AdvancedRobot {
 		int bin = (int)Math.round((gf + 1.0) * 0.5 * (SURF_BINS - 1));
 		bin = Math.max(0, Math.min(SURF_BINS - 1, bin));
 		for (int i = 0; i < SURF_BINS; i++) {
-			double d = i - bin; best.owner.surfStats[i] += SURF_HIT_WEIGHT / (d * d + 1.0);
+			double d = i - bin; best.owner.surfLearning.bins[i] += SURF_HIT_WEIGHT / (d * d + 1.0);
 		}
-		best.owner.surfSamples += SURF_HIT_WEIGHT;
+		best.owner.surfLearning.samples += SURF_HIT_WEIGHT;
+		logAiEvent("surf_learning", "enemy=" + best.owner.name + "|bin=" + bin + "|samples=" + fmt(best.owner.surfLearning.samples));
 		for (int i = enemyWaveCount - 1; i >= 0; i--) if (enemyWaves[i] == best) removeEnemyWave(i);
 	}
 
@@ -991,8 +996,8 @@ public class MadaraV3 extends AdvancedRobot {
 			int bin = (int)Math.round((gf + 1.0) * 0.5 * (SURF_BINS - 1));
 			bin = Math.max(0, Math.min(SURF_BINS - 1, bin));
 			double proximity = 1.0 - radialError / SURF_WAVE_MARGIN;
-			double confidence = Math.min(1.0, w.owner.surfSamples / 12.0);
-			total += adaptiveSurfWeight * proximity * (SURF_BASE_DANGER + w.owner.surfStats[bin] * (0.5 + confidence));
+			double confidence = Math.min(1.0, w.owner.surfLearning.samples / 12.0);
+			total += adaptiveSurfWeight * proximity * (SURF_BASE_DANGER + w.owner.surfLearning.bins[bin] * (0.5 + confidence));
 		}
 		return total;
 	}
@@ -1514,6 +1519,11 @@ public class MadaraV3 extends AdvancedRobot {
 
 
 	private void logRuntimeDiagnostics() {
+		logAiEvent("runtime", "enemies=" + enemyList.size() + "|threats=" + threatCount
+			+ "|target=" + (gunTarget == null ? "none" : gunTarget.name) + "|shots=" + activeShots
+			+ "|waves=" + enemyWaveCount + "|moveDistance=" + fmt(adaptiveMoveDistance)
+			+ "|surfWeight=" + fmt(adaptiveSurfWeight) + "|dodgeTicks=" + roundDodgeTicks
+			+ "|shotDetections=" + roundShotDetections);
 		out.println("[MADARA-P0] TICK"
 			+ " | t=" + now
 			+ " | enemies=" + enemyList.size()
@@ -1550,6 +1560,19 @@ public class MadaraV3 extends AdvancedRobot {
 			+ " | surfWeight=" + fmt(adaptiveSurfWeight));
 	}
 
+	private void logAiEvent(String event, String fields) {
+		try (BufferedWriter w = new BufferedWriter(new FileWriter(getDataFile(AI_LOG_FILE), true))) {
+			w.write("{\"schema\":1,\"event\":\"" + jsonEscape(event) + "\",\"time\":" + getTime()
+				+ ",\"round\":" + roundsPlayed + ",\"data\":\"" + jsonEscape(fields) + "\"}");
+			w.newLine();
+		} catch (IOException ex) { out.println("[MADARA-AI-LOG] write error: " + ex.getMessage()); }
+	}
+
+	private static String jsonEscape(String value) {
+		return value.replace("\\", "\\\\").replace("\"", "\\\"")
+			.replace("\r", "\\r").replace("\n", "\\n");
+	}
+
 	private void loadLearningData() {
 		if (learningLoaded) return;
 		learningLoaded = true;
@@ -1569,6 +1592,14 @@ public class MadaraV3 extends AdvancedRobot {
 					if (p.length >= 9) damageDealt = Double.parseDouble(p[8]);
 					adaptiveMoveDistance = clamp(Double.parseDouble(p[6]), 80, 180);
 					adaptiveSurfWeight = clamp(Double.parseDouble(p[7]), 0.5, 2.5);
+				} else if (p.length == 3 + SURF_BINS && "SURF".equals(p[0])) {
+					SurfStats surf = new SurfStats(); surf.samples = Double.parseDouble(p[2]);
+					for (int i = 0; i < SURF_BINS; i++) surf.bins[i] = Double.parseDouble(p[i + 3]);
+					SURF_STATS.put(p[1], surf);
+				} else if (p.length == 7 && "ROUND".equals(p[0])) {
+					ROUND_HISTORY.add(new RoundSample(Double.parseDouble(p[1]), Double.parseDouble(p[2]),
+						Long.parseLong(p[3]), Long.parseLong(p[4]), Boolean.parseBoolean(p[5]), Long.parseLong(p[6])));
+					while (ROUND_HISTORY.size() > ROUND_HISTORY_LIMIT) ROUND_HISTORY.remove(0);
 				} else if (p.length == 2 + SEGMENTS * (GF_BINS + 1) + GF_BINS + 1 && "GF".equals(p[0])) {
 					GuessFactorStats st = new GuessFactorStats(); int k = 2;
 					for (int seg = 0; seg < SEGMENTS; seg++) {
@@ -1591,8 +1622,18 @@ public class MadaraV3 extends AdvancedRobot {
 		try (BufferedWriter w = new BufferedWriter(new FileWriter(getDataFile(LEARNING_FILE)))) {
 			w.write("META|" + roundsPlayed + "|" + roundsWon + "|" + bulletsFired + "|" + bulletsHit
 				+ "|" + damageReceived + "|" + adaptiveMoveDistance + "|" + adaptiveSurfWeight
-				+ "|" + damageDealt);
+				+ "|" + damageDealt + "|" + LEARNING_FORMAT_VERSION);
 			w.newLine();
+			for (Map.Entry<String, SurfStats> entry : SURF_STATS.entrySet()) {
+				StringBuilder line = new StringBuilder("SURF|").append(entry.getKey()).append('|').append(entry.getValue().samples);
+				for (double value : entry.getValue().bins) line.append('|').append(value);
+				w.write(line.toString()); w.newLine();
+			}
+			for (RoundSample sample : ROUND_HISTORY) {
+				w.write("ROUND|" + sample.damageReceived + "|" + sample.damageDealt + "|" + sample.bulletsFired
+					+ "|" + sample.bulletsHit + "|" + sample.won + "|" + sample.wallHits);
+				w.newLine();
+			}
 			for (Map.Entry<String, GuessFactorStats> entry : STATS.entrySet()) {
 				GuessFactorStats st = entry.getValue();
 				StringBuilder line = new StringBuilder("GF|").append(entry.getKey());
@@ -1605,6 +1646,7 @@ public class MadaraV3 extends AdvancedRobot {
 				w.write(line.toString()); w.newLine();
 			}
 			if (log) {
+				logAiEvent("learning_saved", "gfProfiles=" + STATS.size() + "|surfProfiles=" + SURF_STATS.size() + "|roundHistory=" + ROUND_HISTORY.size());
 				out.println("[MADARA-LEARNING] Saved"
 					+ " | rounds=" + roundsPlayed
 					+ " | wins=" + roundsWon
@@ -1620,54 +1662,51 @@ public class MadaraV3 extends AdvancedRobot {
 	}
 
 	private void recalibrateLearning() {
-		double oldMoveDistance = adaptiveMoveDistance;
-		double oldSurfWeight = adaptiveSurfWeight;
-		double hitRate = bulletsFired == 0 ? 0 : bulletsHit / (double) bulletsFired;
-		double damagePerRound = damageReceived / Math.max(1, roundsPlayed);
-		String reason = "insufficient samples";
-
-		/*
-		 * Hit rate evaluates targeting, not movement distance. Movement is
-		 * adjusted from incoming damage; wave-surf weight follows the same signal.
-		 */
-		if (bulletsFired >= 10 && roundsPlayed >= 3) {
-			if (damagePerRound > 35.0) {
-				adaptiveMoveDistance += 4.0;
-				adaptiveSurfWeight += 0.08;
-				reason = "high incoming damage";
-			} else if (damagePerRound < 15.0) {
-				adaptiveMoveDistance -= 2.0;
-				adaptiveSurfWeight -= 0.05;
-				reason = "low incoming damage";
-			} else {
-				reason = "performance within target range";
+		double oldMoveDistance = adaptiveMoveDistance, oldSurfWeight = adaptiveSurfWeight;
+		String reason = "waiting for 5 completed rounds";
+		if (ROUND_HISTORY.size() >= ROUND_HISTORY_LIMIT) {
+			long fired = 0, hits = 0;
+			double avgReceived = 0.0, avgDealt = 0.0, winRate = 0.0;
+			for (RoundSample sample : ROUND_HISTORY) {
+				fired += sample.bulletsFired; hits += sample.bulletsHit;
+				avgReceived += sample.damageReceived; avgDealt += sample.damageDealt;
+				if (sample.won) winRate++;
 			}
+			avgReceived /= ROUND_HISTORY.size(); avgDealt /= ROUND_HISTORY.size(); winRate /= ROUND_HISTORY.size();
+			if (fired >= 30) {
+				double hitRate = hits / (double) fired;
+				if (avgReceived > 30.0 && avgReceived > avgDealt * 0.8) {
+					adaptiveMoveDistance += 3.0; adaptiveSurfWeight += 0.05; reason = "5-round defensive pressure";
+				} else if (avgReceived < 12.0 && avgDealt > avgReceived * 1.2 && winRate >= 0.4) {
+					adaptiveMoveDistance -= 1.0; adaptiveSurfWeight -= 0.02; reason = "5-round stable advantage";
+				} else reason = "5-round window stable; hitRate=" + formatPercent(hitRate);
+			} else reason = "insufficient 5-round shot sample";
 		}
 		adaptiveMoveDistance = clamp(adaptiveMoveDistance, 80, 180);
 		adaptiveSurfWeight = clamp(adaptiveSurfWeight, 0.5, 2.5);
+		out.println("[MADARA-LEARNING] Recalibration | window=" + ROUND_HISTORY.size()
+			+ " | MoveDistance=" + fmt(oldMoveDistance) + "->" + fmt(adaptiveMoveDistance)
+			+ " | SurfWeight=" + fmt(oldSurfWeight) + "->" + fmt(adaptiveSurfWeight) + " | Reason=" + reason);
+		logAiEvent("recalibration", "reason=" + reason + "|move=" + fmt(oldMoveDistance) + ">" + fmt(adaptiveMoveDistance)
+			+ "|surf=" + fmt(oldSurfWeight) + ">" + fmt(adaptiveSurfWeight) + "|window=" + ROUND_HISTORY.size());
+	}
 
-		out.println("[MADARA-LEARNING] Persistent"
-			+ " | Rounds=" + roundsPlayed
-			+ " | Wins=" + roundsWon
-			+ " | WinRate=" + formatPercent(roundsPlayed == 0 ? 0 : roundsWon / (double) roundsPlayed)
-			+ " | Bullets=" + bulletsHit + "/" + bulletsFired
-			+ " | HitRate=" + formatPercent(hitRate)
-			+ " | DamageDealt=" + fmt(damageDealt)
-			+ " | DamageReceived=" + fmt(damageReceived)
-			+ " | DamageReceived/round=" + String.format(java.util.Locale.US, "%.2f", damagePerRound));
-		out.println("[MADARA-LEARNING] Parameters"
-			+ " | MoveDistance=" + fmt(oldMoveDistance) + " -> " + fmt(adaptiveMoveDistance)
-			+ " | SurfWeight=" + fmt(oldSurfWeight) + " -> " + fmt(adaptiveSurfWeight)
-			+ " | Reason=" + reason
-			+ " | Limits=Move[80,180], Surf[0.5,2.5]");
-		if (bulletsFired < 10 || roundsPlayed < 3) {
-			out.println("[MADARA-LEARNING] Recalibration pending: need 3 rounds and 10 fired bullets.");
-		} else if (oldMoveDistance != adaptiveMoveDistance || oldSurfWeight != adaptiveSurfWeight) {
-			out.println("[MADARA-LEARNING] ADJUSTED");
-		} else {
-			out.println("[MADARA-LEARNING] Parameters at limits or unchanged by performance thresholds.");
+	private void recordRoundSample() {
+		if (roundSampleRecorded) return;
+		roundSampleRecorded = true;
+		ROUND_HISTORY.add(new RoundSample(roundDamageReceived, roundDamageDealt, roundBulletsFired, roundBulletsHit, roundWon, roundWallHits));
+		while (ROUND_HISTORY.size() > ROUND_HISTORY_LIMIT) ROUND_HISTORY.remove(0);
+		logAiEvent("round_sample", "history=" + ROUND_HISTORY.size() + "|won=" + roundWon + "|damageReceived=" + fmt(roundDamageReceived)
+			+ "|damageDealt=" + fmt(roundDamageDealt) + "|fired=" + roundBulletsFired + "|hit=" + roundBulletsHit);
+	}
+
+	private static final class RoundSample {
+		final double damageReceived, damageDealt; final long bulletsFired, bulletsHit, wallHits; final boolean won;
+		RoundSample(double received, double dealt, long fired, long hit, boolean won, long walls) {
+			this.damageReceived=received; this.damageDealt=dealt; this.bulletsFired=fired; this.bulletsHit=hit; this.won=won; this.wallHits=walls;
 		}
 	}
+	private static final class SurfStats { final double[] bins = new double[SURF_BINS]; double samples; }
 
 	private static String formatPercent(double value) {
 		return String.format(java.util.Locale.US, "%.1f%%", value * 100.0);
@@ -1692,6 +1731,11 @@ public class MadaraV3 extends AdvancedRobot {
 	public void onRoundEnded(robocode.RoundEndedEvent e) {
 		// Round count is incremented at the next run() start; save whatever was learned.
 		logRoundDiagnostics();
+		logAiEvent("round_summary", "won=" + roundWon + "|ticks=" + getTime() + "|fired=" + roundBulletsFired
+			+ "|hit=" + roundBulletsHit + "|damageDealt=" + fmt(roundDamageDealt) + "|damageReceived=" + fmt(roundDamageReceived)
+			+ "|detections=" + roundShotDetections + "|dodgeTicks=" + roundDodgeTicks + "|wallHits=" + roundWallHits + "|collisions=" + roundRobotCollisions);
+		recordRoundSample();
+		recalibrateLearning();
 		saveLearningData();
 	}
 
@@ -1715,6 +1759,7 @@ public class MadaraV3 extends AdvancedRobot {
 	private static final class EnemyData {
 
 		final String name;
+		final SurfStats surfLearning;
 
 		double x;
 		double y;
@@ -1736,13 +1781,13 @@ public class MadaraV3 extends AdvancedRobot {
 
 		long lastFireTime = -1000;
 		long lastWaveTime = -1000;
-		double[] surfStats = new double[SURF_BINS];
-		double surfSamples;
-
 		EnemyShot lastShot;
 
 		EnemyData(String name) {
 			this.name = name;
+			SurfStats stats = SURF_STATS.get(name);
+			if (stats == null) { stats = new SurfStats(); SURF_STATS.put(name, stats); }
+			this.surfLearning = stats;
 		}
 
 		void update(
