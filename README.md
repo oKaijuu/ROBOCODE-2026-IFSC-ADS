@@ -103,7 +103,7 @@ Madara V3 is developed on an isolated experimental branch so movement and combat
 **1. Clone only this branch**
 
 ```bash
-git clone --branch experiment/madara-v3-melee-movement --single-branch https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS.git
+git clone --branch experiment/madara-v3-melee-movement --single-branch https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS.git TriStateRobots
 ```
 
 **2. Launch Robocode**
