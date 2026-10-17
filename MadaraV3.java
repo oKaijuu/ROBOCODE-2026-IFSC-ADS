@@ -1691,6 +1691,22 @@ public class MadaraV3 extends AdvancedRobot {
 			+ "|surf=" + fmt(oldSurfWeight) + ">" + fmt(adaptiveSurfWeight) + "|window=" + ROUND_HISTORY.size());
 	}
 
+	private void decayLearning() {
+		for (GuessFactorStats stats : STATS.values()) {
+			stats.allTotal *= 0.995;
+			for (int b = 0; b < GF_BINS; b++) stats.allBins[b] *= 0.995;
+			for (int seg = 0; seg < SEGMENTS; seg++) {
+				stats.segTotal[seg] *= 0.995;
+				for (int b = 0; b < GF_BINS; b++) stats.segBins[seg][b] *= 0.995;
+			}
+		}
+		for (SurfStats stats : SURF_STATS.values()) {
+			stats.samples *= 0.98;
+			for (int b = 0; b < SURF_BINS; b++) stats.bins[b] *= 0.98;
+		}
+		logAiEvent("learning_decay", "gfProfiles=" + STATS.size() + "|surfProfiles=" + SURF_STATS.size() + "|gfFactor=0.995|surfFactor=0.98");
+	}
+
 	private void recordRoundSample() {
 		if (roundSampleRecorded) return;
 		roundSampleRecorded = true;
@@ -1735,6 +1751,7 @@ public class MadaraV3 extends AdvancedRobot {
 			+ "|hit=" + roundBulletsHit + "|damageDealt=" + fmt(roundDamageDealt) + "|damageReceived=" + fmt(roundDamageReceived)
 			+ "|detections=" + roundShotDetections + "|dodgeTicks=" + roundDodgeTicks + "|wallHits=" + roundWallHits + "|collisions=" + roundRobotCollisions);
 		recordRoundSample();
+		decayLearning();
 		recalibrateLearning();
 		saveLearningData();
 	}
