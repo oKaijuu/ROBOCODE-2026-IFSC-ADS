@@ -833,6 +833,8 @@ public class MadaraV3 extends AdvancedRobot {
 		int learnedBin = guessFactorToBin(guessFactor);
 		stats.add(w.segment, learnedBin, w.weight);
 		roundGfUpdates++;
+		logAiEvent("guess_factor_update", "enemy=" + en.name + "|segment=" + w.segment + "|gf=" + fmt(guessFactor)
+			+ "|bin=" + learnedBin + "|weight=" + fmt(w.weight) + "|samples=" + fmt(stats.allTotal));
 		out.println("[MADARA-LEARNING] GF update | enemy=" + en.name
 			+ " | segment=" + w.segment
 			+ " | GF=" + fmt(guessFactor)
@@ -884,6 +886,8 @@ public class MadaraV3 extends AdvancedRobot {
 		}
 
 		roundShotDetections++;
+		logAiEvent("enemy_shot_detected", "enemy=" + en.name + "|power=" + fmt(drop)
+			+ "|scanGap=" + (now - en.prevScanTime) + "|energyAdjust=" + fmt(adjust));
 		createShot(en, drop);
 		createEnemyWave(en, drop);
 	}
