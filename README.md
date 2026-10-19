@@ -1,46 +1,57 @@
 <div align="center">
 
-<img src="https://media1.tenor.com/m/EpgxcRD1ydsAAAAd/madara-uchiha.gif" width="320" alt="Madara V3" />
+<img src="https://media1.tenor.com/m/LqxYy-Xu_z0AAAAd/madara-uchiha-madara-ten-tails-jinchuriki.gif" width="320" alt="Madara V3.1" />
 
-# Madara V3
+# Madara V3.1
 
 ### Robocode · IFSC ADS 2026
 
-**Learning, persistence, and continued development**
+**Optimization and refactoring — behavior and learning compatibility first**
 
 [![Java](https://img.shields.io/badge/Language-Java-cc3333?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
-[![Version](https://img.shields.io/badge/Madara-V3-2e8b57?style=for-the-badge)](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3)
+[![Version](https://img.shields.io/badge/Madara-V3.1-6f42c1?style=for-the-badge)](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1)
 
-[Repository home](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS) · [Source file](./MadaraV3.java) · [Properties](./MadaraV3.properties)
+[Repository home](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS) · [V3.1 source](./MadaraV3_1.java) · [V3 baseline](./MadaraV3.java)
 
 </div>
 
 ---
 
-## Overview
+## Objective
 
-Madara V3 is the third generation of the Madara robot. This branch includes the robot source and associated configuration and persisted learning data where available.
+Madara V3.1 is a dedicated optimization and refactoring branch based on Madara V3. The initial goal is to improve code organization, reduce redundant work, and make the implementation easier to maintain without intentionally changing combat behavior.
 
-## Branch contents
+## Scope
 
-- `MadaraV3.java` — robot implementation.
-- `MadaraV3.properties` — robot configuration.
-- `MadaraV3.data/madara-v3-learning.dat` — persisted learning data, when present.
+- Factor repeated logic into clear, reusable methods.
+- Identify avoidable calculations, allocations, and repeated iterations.
+- Preserve current combat systems and behavior while establishing a baseline.
+- Keep the V3 learning-data format compatible.
 
-Keep the source, configuration, and learning data together when copying the robot to another environment. Back up the data file before resetting or reinstalling a system if you want to retain learned state.
+## Learning-data compatibility
 
-## Run and evaluate
+V3.1 continues to use the existing learning file name: `madara-v3-learning.dat`.
 
-1. Copy the source and associated files into the Robocode robot directory.
-2. Compile `MadaraV3.java` in Robocode.
-3. Run repeated battles under consistent settings.
-4. Inspect the learning data and compare results over multiple rounds.
+The file format and GuessFactor statistics should remain compatible with Madara V3. The V3 source and its original metadata are retained for comparison. For isolated experiments, do not run both versions against the same live data file simultaneously. Back up the learning file before testing.
+
+## Files
+
+- `MadaraV3_1.java` — V3.1 working implementation, initially copied from V3 with only the Java class name changed.
+- `MadaraV3_1.properties` — Robocode metadata for V3.1.
+- `MadaraV3.java` and `MadaraV3.properties` — original V3 baseline retained for comparison.
+- `MadaraV3.data/madara-v3-learning.dat` — existing persisted learning data, retained from V3 when present.
+
+## Validation plan
+
+1. Compile V3.1 before making optimization changes.
+2. Run it against the same opponents and battle settings used for V3.
+3. Compare win rate, damage dealt/received, hit rate, wall collisions, dodge activity, and execution stability.
+4. Apply refactoring in small steps and compare results after each step.
+5. Do not change learning-data serialization or combat logic as part of a purely structural refactor.
 
 ## Version lineage
 
-- [StationaryTracker — original baseline](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker)
-- [Madara V1 — first generation](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1)
-- [Madara V2 — second generation](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2)
-- **Madara V3 — learning and persistence**
+- [Madara V3 — baseline](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3)
+- **Madara V3.1 — optimization and refactoring**
 
 <div align="center"><sub>ROBOCODE · IFSC ADS · 2026</sub></div>
