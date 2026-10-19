@@ -230,7 +230,7 @@ curl -fsSL https://raw.githubusercontent.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/main
 bash /tmp/setup-robocode-linux.sh
 ```
 
-The script installs Git, curl and Java 17, clones or updates this repository, fetches the version branches, and copies **StationaryTracker, Madara V1, V2 and V3** plus the V3 configuration and learning data when available.
+The script uses the Git, curl and Java already available on the machine, clones or updates this repository, fetches the version branches, and copies **StationaryTracker, Madara V1, V2 and V3** plus the V3 configuration and learning data when available. It does **not** run `apt`, `apt-get`, `sudo`, or any system package manager. If a required tool is missing, it stops and tells you to ask the lab administrator rather than attempting a privileged installation.
 
 The classic Robocode installer is downloaded from SourceForge and opens its graphical setup wizard on the first run. Choose `~/robocode` as the installation directory when prompted. The script also creates a launcher at `~/.local/bin/robocode-project`.
 
