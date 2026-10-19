@@ -1,0 +1,14 @@
+# Java / Robocode compiled files
+*.class
+**/*.class
+
+# Java build output
+bin/
+out/
+build/
+target/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
