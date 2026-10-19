@@ -47,7 +47,7 @@ The file format and GuessFactor statistics should remain compatible with Madara 
 
 ## Files
 
-- `MadaraV3_1.java` — V3.1 working implementation, initially copied from V3 with only the Java class name changed.
+- `MadaraV3_1.java` — V3.1 working implementation based on V3, now including the first structural optimization pass for movement danger evaluation.
 - `MadaraV3_1.properties` — Robocode metadata for V3.1.
 - `MadaraV3.java` and `MadaraV3.properties` — original V3 baseline retained for comparison.
 - `MadaraV3.data/madara-v3-learning.dat` — existing persisted learning data, retained from V3 when present.
