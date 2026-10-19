@@ -6,63 +6,50 @@
 
 ### Robocode · IFSC ADS 2026
 
-**Optimization and refactoring — behavior and learning compatibility first**
+**Adaptive combat, intelligent movement, and learned targeting**
 
 [![Java](https://img.shields.io/badge/Language-Java-cc3333?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
 [![Version](https://img.shields.io/badge/Madara-V3.1-6f42c1?style=for-the-badge)](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1)
 
-[Repository home](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS) · [V3.1 source](./MadaraV3_1.java) · [V3 baseline](./MadaraV3.java)
+[Repository home](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS) · [Source file](./MadaraV3_1.java) · [Configuration](./MadaraV3_1.properties) · [Previous version: V3](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3)
 
 </div>
 
 ---
 
-## Objective
+## Overview
 
-Madara V3.1 is a dedicated optimization and refactoring branch based on Madara V3. The initial goal is to improve code organization, reduce redundant work, and make the implementation easier to maintain without intentionally changing combat behavior.
+Madara V3.1 is a Java robot for Robocode, developed as an evolution of Madara V3. It combines enemy tracking, adaptive targeting, and danger-aware movement to survive and fight in battles with multiple opponents.
 
-## Scope
+## Features
 
-- Factor repeated logic into clear, reusable methods.
-- Identify avoidable calculations, allocations, and repeated iterations.
-- Preserve current combat systems and behavior while establishing a baseline.
-- Keep the V3 learning-data format compatible.
-
-## First optimization pass
-
-The first structural pass optimizes the movement danger scan while preserving the existing scoring rules:
-
-- Reuses each candidate direction's sine and cosine values across evaluation and dodge diagnostics.
-- Calculates projectile danger once per movement candidate and reuses that exact score for both movement selection and diagnostics.
-- Precomputes each active enemy bullet's projected coordinates once per tick, then reuses those coordinates across all movement candidates.
-- Keeps the 24 candidate directions, danger weights, threat handling, aiming/firing logic, and learning serialization format unchanged.
-
-This is a code-level optimization, not a measured benchmark. Compile V3.1 and compare it with V3 over identical battle settings before judging runtime or combat performance.
-
-## Learning-data compatibility
-
-V3.1 continues to use the existing learning file name: `madara-v3-learning.dat`.
-
-The file format and GuessFactor statistics should remain compatible with Madara V3. The V3 source and its original metadata are retained for comparison. For isolated experiments, do not run both versions against the same live data file simultaneously. Back up the learning file before testing.
+- **Enemy tracking:** follows scanned opponents and periodically searches for enemies that have not been detected recently.
+- **Adaptive targeting:** uses GuessFactor statistics learned from enemy movement, with a linear targeting fallback.
+- **Danger-aware movement:** evaluates movement directions while accounting for walls, nearby enemies, collisions, and incoming bullets.
+- **Bullet dodging:** tracks enemy shots and estimates their trajectories to choose safer movement.
+- **Adaptive firing:** adjusts bullet power based on combat conditions.
+- **Persistent learning:** stores targeting data so learned statistics can be reused across rounds.
 
 ## Files
 
-- `MadaraV3_1.java` — V3.1 working implementation based on V3, now including the first structural optimization pass for movement danger evaluation.
-- `MadaraV3_1.properties` — Robocode metadata for V3.1.
-- `MadaraV3.java` and `MadaraV3.properties` — original V3 baseline retained for comparison.
-- `MadaraV3.data/madara-v3-learning.dat` — existing persisted learning data, retained from V3 when present.
+- `MadaraV3_1.java` — main robot implementation.
+- `MadaraV3_1.properties` — Robocode robot metadata and configuration.
+- `MadaraV3.java` and `MadaraV3.properties` — V3 files retained as a reference baseline.
+- `MadaraV3.data/madara-v3-learning.dat` — V3 learning data, when included in the branch.
 
-## Validation plan
+## Run it
 
-1. Compile the current V3.1 implementation before further changes, then run the baseline comparison below.
-2. Run it against the same opponents and battle settings used for V3.
-3. Compare win rate, damage dealt/received, hit rate, wall collisions, dodge activity, and execution stability.
-4. Apply refactoring in small steps and compare results after each step.
-5. Do not change learning-data serialization or combat logic as part of a purely structural refactor.
+1. Place the source and properties files in your Robocode robot source directory.
+2. Compile `MadaraV3_1.java` in Robocode.
+3. Select **MadaraV3_1** in the robot list and start a battle.
+4. Run multiple battles to observe movement, targeting, and survival against different opponents.
 
 ## Version lineage
 
-- [Madara V3 — baseline](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3)
-- **Madara V3.1 — optimization and refactoring**
+- [StationaryTracker — original baseline](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker)
+- [Madara V1 — first generation](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1)
+- [Madara V2 — second generation](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2)
+- [Madara V3 — learning and persistence](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3)
+- **Madara V3.1 — adaptive combat and movement**
 
 <div align="center"><sub>ROBOCODE · IFSC ADS · 2026</sub></div>
