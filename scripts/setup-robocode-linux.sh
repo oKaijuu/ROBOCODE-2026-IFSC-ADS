@@ -17,22 +17,14 @@ say() { printf '\n\033[1;36m[Robocode setup]\033[0m %s\n' "$*"; }
 warn() { printf '\n\033[1;33m[Notice]\033[0m %s\n' "$*"; }
 die() { printf '\n\033[1;31m[Error]\033[0m %s\n' "$*" >&2; exit 1; }
 
-command -v apt-get >/dev/null 2>&1 || die "This script supports Ubuntu/Debian-based Linux (apt-get)."
-command -v sudo >/dev/null 2>&1 || [[ "$(id -u)" -eq 0 ]] || die "Install sudo or run as root."
+# Student/restricted accounts: never use apt, sudo, or system package managers.
+# Require preinstalled tools and report missing dependencies without modifying the OS.
+for tool in git curl java; do
+  command -v "$tool" >/dev/null 2>&1 || die "Required command '$tool' is unavailable. Ask the lab administrator to provide Git, curl, and Java; this script does not use apt or sudo."
+done
 
-say "Installing required tools (Git, curl, Java JDK)..."
-if [[ "$(id -u)" -eq 0 ]]; then
-  apt-get update
-  DEBIAN_FRONTEND=noninteractive apt-get install -y git curl ca-certificates openjdk-17-jdk
-else
-  sudo apt-get update
-  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y git curl ca-certificates openjdk-17-jdk
-fi
-
-export JAVA_HOME
-JAVA_BIN="$(readlink -f "$(command -v javac)")"
-JAVA_HOME="$(dirname "$(dirname "$JAVA_BIN")")"
-export PATH="$JAVA_HOME/bin:$PATH"
+JAVA_VERSION="$(java -version 2>&1 | head -n 1)"
+say "Using existing Java installation: $JAVA_VERSION"
 
 mkdir -p "$WORK_DIR" "$INSTALLER_DIR" "$ROBOT_PACKAGE_DIR"
 
