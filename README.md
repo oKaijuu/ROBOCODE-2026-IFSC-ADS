@@ -6,7 +6,7 @@
 
 ### An evolving Robocode AI project
 
-**One baseline. Three generations. Continuous experimentation.**
+**One baseline. Three generations. Continuous development.**
 
 [![Java](https://img.shields.io/badge/Language-Java-cc3333?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
 [![Robocode](https://img.shields.io/badge/Platform-Robocode-6f42c1?style=for-the-badge)](https://robocode.sourceforge.io/)
@@ -14,7 +14,7 @@
 
 **Language / Idioma:** [English](#english-version) · [Português](#versao-em-portugues)
 
-[**Robot lineup**](#-robot-lineup) · [**Branch map**](#-branch-map) · [**Experiments**](#-experiments)
+[**Robot lineup**](#-robot-lineup) · [**Branch map**](#-branch-map)
 
 </div>
 
@@ -76,17 +76,6 @@ Each version has its own branch so its source can be inspected and compared with
 | [`madara-v1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) | Version 1 | `MadaraV1.java` and baseline source |
 | [`madara-v2`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) | Version 2 | `MadaraV2.java` and baseline source |
 | [`madara-v3`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3) | Version 3 | `MadaraV3.java`, properties, learning data and baseline source |
-| [`experiment/madara-v3-melee-movement`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/experiment/madara-v3-melee-movement) | Experimental | V3 melee-movement work and experiment documentation |
-
-## 🧪 Experiments
-
-Experimental changes should remain isolated from the version branches until they are ready to be evaluated. The current melee-movement work has its own branch:
-
-<div align="center">
-
-[![Open experiment branch](https://img.shields.io/badge/EXPERIMENT-Madara%20V3%20Melee%20Movement-6f42c1?style=for-the-badge&logo=github)](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/experiment/madara-v3-melee-movement)
-
-</div>
 
 <details>
   <summary><strong>How to inspect a version</strong></summary>
@@ -103,7 +92,6 @@ Experimental changes should remain isolated from the version branches until they
 
   - Keep each Madara generation in its own branch.
   - Use `StationaryTracker` as the original comparison baseline.
-  - Keep experiments isolated until their results justify merging or promoting them.
   - Avoid committing generated `.class` files and temporary test robots.
   - Preserve V3's required configuration and learning data with its source.
 
@@ -167,17 +155,6 @@ Cada versão possui sua própria branch para permitir inspeção e comparação 
 | [`madara-v1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) | Versão 1 | `MadaraV1.java` e código de referência |
 | [`madara-v2`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) | Versão 2 | `MadaraV2.java` e código de referência |
 | [`madara-v3`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3) | Versão 3 | `MadaraV3.java`, propriedades, dados de aprendizado e código de referência |
-| [`experiment/madara-v3-melee-movement`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/experiment/madara-v3-melee-movement) | Experimental | Trabalho de movimentação corpo a corpo do V3 e documentação do experimento |
-
-## 🧪 Experimentos
-
-Mudanças experimentais devem permanecer isoladas das branches de versão até estarem prontas para avaliação. O trabalho atual de movimentação corpo a corpo do V3 possui uma branch própria:
-
-<div align="center">
-
-[![Abrir branch experimental](https://img.shields.io/badge/EXPERIMENTO-Madara%20V3%20Melee%20Movement-6f42c1?style=for-the-badge&logo=github)](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/experiment/madara-v3-melee-movement)
-
-</div>
 
 <details>
   <summary><strong>Como inspecionar uma versão</strong></summary>
@@ -194,7 +171,6 @@ Mudanças experimentais devem permanecer isoladas das branches de versão até e
 
   - Mantenha cada geração do Madara em sua própria branch.
   - Use o `StationaryTracker` como referência original de comparação.
-  - Mantenha experimentos isolados até que os resultados justifiquem sua integração ou promoção.
   - Evite enviar arquivos compilados `.class` e robôs de teste temporários.
   - Preserve os arquivos de configuração e os dados de aprendizado necessários ao V3 junto ao código-fonte.
 
