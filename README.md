@@ -28,6 +28,17 @@ Madara V3.1 is a dedicated optimization and refactoring branch based on Madara V
 - Preserve current combat systems and behavior while establishing a baseline.
 - Keep the V3 learning-data format compatible.
 
+## First optimization pass
+
+The first structural pass optimizes the movement danger scan while preserving the existing scoring rules:
+
+- Reuses each candidate direction's sine and cosine values across evaluation and dodge diagnostics.
+- Calculates projectile danger once per movement candidate and reuses that exact score for both movement selection and diagnostics.
+- Precomputes each active enemy bullet's projected coordinates once per tick, then reuses those coordinates across all movement candidates.
+- Keeps the 24 candidate directions, danger weights, threat handling, aiming/firing logic, and learning serialization format unchanged.
+
+This is a code-level optimization, not a measured benchmark. Compile V3.1 and compare it with V3 over identical battle settings before judging runtime or combat performance.
+
 ## Learning-data compatibility
 
 V3.1 continues to use the existing learning file name: `madara-v3-learning.dat`.
