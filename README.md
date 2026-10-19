@@ -214,3 +214,41 @@ Mudanças experimentais devem permanecer isoladas das branches de versão até e
 [Back to English](#english-version) · [Voltar ao português](#versao-em-portugues)
 
 </div>
+
+---
+
+## 🐧 Automatic Robocode setup on Linux
+
+If your Linux environment resets after shutdown, use the setup script to reinstall the requirements, restore the repository, and copy all robot versions into the Robocode robot directory.
+
+### Quick install
+
+Run this in a terminal on Ubuntu or Debian:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/main/scripts/setup-robocode-linux.sh -o /tmp/setup-robocode-linux.sh
+bash /tmp/setup-robocode-linux.sh
+```
+
+The script installs Git, curl and Java 17, clones or updates this repository, fetches the version branches, and copies **StationaryTracker, Madara V1, V2 and V3** plus the V3 configuration and learning data when available.
+
+The classic Robocode installer is downloaded from SourceForge and opens its graphical setup wizard on the first run. Choose `~/robocode` as the installation directory when prompted. The script also creates a launcher at `~/.local/bin/robocode-project`.
+
+### After installation
+
+Start Robocode with:
+
+```bash
+~/.local/bin/robocode-project
+```
+
+In Robocode, ensure the robot root directory is set to:
+
+```
+~/robocode/robots
+```
+
+If the robots do not appear, add that path in Robocode's robot path settings and restart the application.
+
+**Important:** the script automates setup, but it cannot prevent data loss if the Linux environment deletes the entire home directory on shutdown. Keep the command above accessible; after a reset, run it again. The project checkout and robot files are recreated locally.
+
