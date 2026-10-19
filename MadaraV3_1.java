@@ -150,6 +150,11 @@ public class MadaraV3_1 extends AdvancedRobot {
 
 	private final double[] travelDist = new double[DODGE_TICKS + 1];
 
+	// Per-tick projectile forecasts shared by every movement candidate.
+	private final double[][] shotPathX = new double[MAX_SHOTS][DODGE_TICKS + 1];
+	private final double[][] shotPathY = new double[MAX_SHOTS][DODGE_TICKS + 1];
+	private final boolean[][] shotPathValid = new boolean[MAX_SHOTS][DODGE_TICKS + 1];
+
 	private EnemyData gunTarget;
 
 	private long sweepEnd;
@@ -1109,17 +1114,24 @@ public class MadaraV3_1 extends AdvancedRobot {
 		double lowestNoShot = Double.POSITIVE_INFINITY;
 		double highestShotDanger = 0.0;
 
+		// Projectile coordinates depend on the current tick, not on the candidate angle.
+		// Calculate them once instead of repeating the same work for all movement samples.
+		if (activeShots > 0) {
+			prepareShotPaths();
+		}
+
 		for (int i = 0; i < DANGER_SAMPLES; i++) {
 
 			double angle = myHeading + step * i;
+			double sin = Math.sin(angle);
+			double cos = Math.cos(angle);
 
-			double danger = evaluate(angle, true);
+			// Reuse the same projectile-danger result for movement scoring and diagnostics.
+			double currentShotDanger = activeShots > 0 ? shotDanger(sin, cos) : 0.0;
+			double danger = evaluate(angle, true, sin, cos, currentShotDanger);
 
-			if (activeShots > 0) {
-				double currentShotDanger = shotDanger(Math.sin(angle), Math.cos(angle));
-				if (currentShotDanger > highestShotDanger) {
-					highestShotDanger = currentShotDanger;
-				}
+			if (activeShots > 0 && currentShotDanger > highestShotDanger) {
+				highestShotDanger = currentShotDanger;
 			}
 
 			if (danger < lowest) {
@@ -1128,7 +1140,7 @@ public class MadaraV3_1 extends AdvancedRobot {
 			}
 
 			if (activeShots > 0) {
-				double dangerWithoutShots = evaluate(angle, false);
+				double dangerWithoutShots = evaluate(angle, false, sin, cos, 0.0);
 
 				if (dangerWithoutShots < lowestNoShot) {
 					lowestNoShot = dangerWithoutShots;
@@ -1216,9 +1228,20 @@ public class MadaraV3_1 extends AdvancedRobot {
 	}
 
 	private double evaluate(double angle, boolean includeShots) {
-
 		double sin = Math.sin(angle);
 		double cos = Math.cos(angle);
+		double currentShotDanger =
+			includeShots && activeShots > 0 ? shotDanger(sin, cos) : 0.0;
+		return evaluate(angle, includeShots, sin, cos, currentShotDanger);
+	}
+
+	private double evaluate(
+		double angle,
+		boolean includeShots,
+		double sin,
+		double cos,
+		double currentShotDanger
+	) {
 
 		double px = myX + sin * adaptiveMoveDistance;
 		double py = myY + cos * adaptiveMoveDistance;
@@ -1251,7 +1274,7 @@ public class MadaraV3_1 extends AdvancedRobot {
 
 		if (includeShots) {
 			if (activeShots > 0) {
-				danger += shotDanger(sin, cos);
+				danger += currentShotDanger;
 			}
 			// Experimental ablation: inferred wave danger is disabled while tracked bullet danger remains active.
 		}
@@ -1275,6 +1298,32 @@ public class MadaraV3_1 extends AdvancedRobot {
 	}
 
 	/**
+	 * Precompute the predicted positions of active enemy bullets for this tick.
+	 * These positions are independent of the candidate direction being evaluated.
+	 */
+	private void prepareShotPaths() {
+
+		for (int i = 0; i < MAX_SHOTS; i++) {
+			EnemyShot shot = shots[i];
+
+			if (!shot.active) {
+				continue;
+			}
+
+			for (int t = 1; t <= DODGE_TICKS; t++) {
+				double traveled = (now + t - shot.fireTime) * shot.speed;
+				boolean valid = traveled >= 0.0;
+				shotPathValid[i][t] = valid;
+
+				if (valid) {
+					shotPathX[i][t] = shot.ox + shot.dx * traveled;
+					shotPathY[i][t] = shot.oy + shot.dy * traveled;
+				}
+			}
+		}
+	}
+
+	/**
 	 * Danger from in-flight enemy bullets, evaluated tick by tick along the
 	 * candidate path. The path uses realistic accelerating travel distances.
 	 */
@@ -1284,22 +1333,22 @@ public class MadaraV3_1 extends AdvancedRobot {
 
 		for (int i = 0; i < MAX_SHOTS; i++) {
 
-			EnemyShot s = shots[i];
-
-			if (!s.active) {
+			if (!shots[i].active) {
 				continue;
 			}
 
+			double[] pathX = shotPathX[i];
+			double[] pathY = shotPathY[i];
+			boolean[] pathValid = shotPathValid[i];
+
 			for (int t = 1; t <= DODGE_TICKS; t++) {
 
-				double traveled = (now + t - s.fireTime) * s.speed;
-
-				if (traveled < 0) {
+				if (!pathValid[t]) {
 					continue;
 				}
 
-				double bx = s.ox + s.dx * traveled;
-				double by = s.oy + s.dy * traveled;
+				double bx = pathX[t];
+				double by = pathY[t];
 
 				double rx = myX + sin * travelDist[t];
 				double ry = myY + cos * travelDist[t];
