@@ -42,6 +42,7 @@ git -C "$PROJECT_DIR" fetch origin \
   '+refs/heads/madara-v1:refs/remotes/origin/madara-v1' \
   '+refs/heads/madara-v2:refs/remotes/origin/madara-v2' \
   '+refs/heads/madara-v3:refs/remotes/origin/madara-v3' \
+  '+refs/heads/madara-v3.1:refs/remotes/origin/madara-v3.1' \
   '+refs/heads/stationary-tracker:refs/remotes/origin/stationary-tracker'
 
 copy_from_branch() {
@@ -59,12 +60,29 @@ copy_from_branch "madara-v1" "MadaraV1.java" "$ROBOT_PACKAGE_DIR/MadaraV1.java"
 copy_from_branch "madara-v2" "MadaraV2.java" "$ROBOT_PACKAGE_DIR/MadaraV2.java"
 copy_from_branch "madara-v3" "MadaraV3.java" "$ROBOT_PACKAGE_DIR/MadaraV3.java"
 copy_from_branch "madara-v3" "MadaraV3.properties" "$ROBOT_PACKAGE_DIR/MadaraV3.properties"
+copy_from_branch "madara-v3.1" "MadaraV3_1.java" "$ROBOT_PACKAGE_DIR/MadaraV3_1.java"
+copy_from_branch "madara-v3.1" "MadaraV3_1.properties" "$ROBOT_PACKAGE_DIR/MadaraV3_1.properties"
 
-# Preserve the V3 persisted learning data if it exists in that branch.
+# Seed each robot's independent learning directory from V3 data, but never overwrite local progress.
 if git -C "$PROJECT_DIR" cat-file -e "refs/remotes/origin/madara-v3:MadaraV3.data/madara-v3-learning.dat" 2>/dev/null; then
-  mkdir -p "$ROBOT_PACKAGE_DIR/MadaraV3.data"
-  git -C "$PROJECT_DIR" show "refs/remotes/origin/madara-v3:MadaraV3.data/madara-v3-learning.dat" > "$ROBOT_PACKAGE_DIR/MadaraV3.data/madara-v3-learning.dat"
-  say "Installed Madara V3 learning data"
+  V3_LEARNING_FILE="$ROBOT_PACKAGE_DIR/MadaraV3.data/madara-v3-learning.dat"
+  V31_LEARNING_FILE="$ROBOT_PACKAGE_DIR/MadaraV3_1.data/madara-v3-learning.dat"
+
+  if [[ ! -s "$V3_LEARNING_FILE" ]]; then
+    mkdir -p "$(dirname "$V3_LEARNING_FILE")"
+    git -C "$PROJECT_DIR" show "refs/remotes/origin/madara-v3:MadaraV3.data/madara-v3-learning.dat" > "$V3_LEARNING_FILE"
+    say "Seeded Madara V3 learning data"
+  else
+    say "Keeping existing Madara V3 learning data"
+  fi
+
+  if [[ ! -s "$V31_LEARNING_FILE" ]]; then
+    mkdir -p "$(dirname "$V31_LEARNING_FILE")"
+    git -C "$PROJECT_DIR" show "refs/remotes/origin/madara-v3:MadaraV3.data/madara-v3-learning.dat" > "$V31_LEARNING_FILE"
+    say "Seeded Madara V3.1 learning data from the V3 baseline"
+  else
+    say "Keeping existing Madara V3.1 learning data"
+  fi
 fi
 
 # Install classic Robocode if it is not already present.
