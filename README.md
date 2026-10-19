@@ -54,7 +54,7 @@ The file format and GuessFactor statistics should remain compatible with Madara 
 
 ## Validation plan
 
-1. Compile V3.1 before making optimization changes.
+1. Compile the current V3.1 implementation before further changes, then run the baseline comparison below.
 2. Run it against the same opponents and battle settings used for V3.
 3. Compare win rate, damage dealt/received, hit rate, wall collisions, dodge activity, and execution stability.
 4. Apply refactoring in small steps and compare results after each step.
