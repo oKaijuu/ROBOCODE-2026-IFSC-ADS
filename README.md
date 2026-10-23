@@ -50,6 +50,6 @@ Madara V3.1 is a Java robot for Robocode, developed as an evolution of Madara V3
 - [Madara V1 — first generation](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1)
 - [Madara V2 — second generation](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2)
 - [Madara V3 — learning and persistence](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3)
-- **Madara V3.1 — adaptive combat and movement**
+- **Madara V3.1 — code simplify and factoration**
 
 <div align="center"><sub>ROBOCODE · IFSC ADS · 2026</sub></div>
