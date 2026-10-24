@@ -217,7 +217,7 @@ Cada versão possui sua própria branch para permitir inspeção e comparação 
 
 ## 🐧 Automatic Robocode setup on Linux
 
-Use the quick installer to restore the repository, install the project robots, and create a standard Robocode launcher. It is designed for Ubuntu/Debian-based lab environments and does not require administrator privileges.
+Use the quick installer to restore the repository and install the project robots. It uses Robocode's original launcher at `~/robocode/robocode.sh` instead of creating a wrapper in `~/.local/bin`. It is designed for Ubuntu/Debian-based lab environments and does not require administrator privileges.
 
 ### Quick install
 
@@ -228,7 +228,7 @@ curl -fsSL https://raw.githubusercontent.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/main
 bash /tmp/setup-robocode-linux.sh
 ```
 
-The script uses the existing Git, curl, and Java installations. It never runs `apt`, `apt-get`, `sudo`, or a system package manager. If a required command is missing, it stops and explains what needs to be provided by the lab administrator. It installs Robocode under `~/robocode` by default and automatically patches `~/robocode/robocode.sh`, changing `. ./set_java_options.sh` to `./set_java_options.sh` before creating the launcher.
+The script uses the existing Git, curl, and Java installations. It never runs `apt`, `apt-get`, `sudo`, or a system package manager. If a required command is missing, it stops and explains what needs to be provided by the lab administrator. It installs Robocode under `~/robocode` by default and automatically patches `~/robocode/robocode.sh`, changing `. ./set_java_options.sh` to `./set_java_options.sh`. The installer makes the original `robocode.sh` executable and points the desktop-menu shortcut directly to it; it does not create `~/.local/bin/robocode` or `~/.local/bin/robocode-project`.
 
 It fetches the project branches and installs **StationaryTracker, Madara V1, V2, V3, and V3.1**, including the V3.1 source and properties file.
 
@@ -243,19 +243,13 @@ Existing learning files are not overwritten. This lets V3.1 start from the avail
 
 ### Launch Robocode
 
-The installer adds a launcher named `robocode` and a **Robocode** application-menu entry. After setup, launch it with:
+The installer uses the original Robocode launcher and adds a **Robocode** application-menu shortcut that points directly to it. Launch Robocode with:
 
 ```bash
-robocode
+~/robocode/robocode.sh
 ```
 
-If `robocode` is not found, run it directly:
-
-```bash
-~/.local/bin/robocode
-```
-
-The previous `~/.local/bin/robocode-project` command is also kept as a compatibility alias.
+If you installed Robocode in a different directory, replace `~/robocode` with that installation path. The launcher is patched before it is opened, and no wrapper launcher is created under `~/.local/bin`.
 
 Choose `~/robocode` as the installation directory in the graphical installer if Robocode is not already installed. In Robocode, make sure the robot root directory is set to:
 
