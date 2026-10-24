@@ -114,32 +114,15 @@ if [[ -f "$ROBocode_HOME/robocode.sh" ]]; then
   fi
 fi
 
-# Install the standard command name: robocode.
-mkdir -p "$HOME/.local/bin"
-cat > "$HOME/.local/bin/robocode" <<LAUNCHER
-#!/usr/bin/env bash
-set -e
-ROBocode_HOME="$ROBocode_HOME"
-if [[ -x "\$ROBocode_HOME/robocode.sh" ]]; then
-  cd "\$ROBocode_HOME"
-  exec ./robocode.sh "\$@"
-elif [[ -f "\$ROBocode_HOME/robocode.jar" ]]; then
-  exec java -jar "\$ROBocode_HOME/robocode.jar" "\$@"
+# Use the installation's original launcher directly; do not create a ~/.local/bin wrapper.
+if [[ -f "$ROBocode_HOME/robocode.sh" ]]; then
+  chmod +x "$ROBocode_HOME/robocode.sh"
+  DESKTOP_EXEC="$ROBocode_HOME/robocode.sh"
 else
-  echo "Robocode not found at: \$ROBocode_HOME" >&2
-  exit 1
+  DESKTOP_EXEC="java -jar $ROBocode_HOME/robocode.jar"
 fi
-LAUNCHER
-chmod +x "$HOME/.local/bin/robocode"
 
-# Preserve the old project-specific command for existing instructions.
-cat > "$HOME/.local/bin/robocode-project" <<'COMPAT_LAUNCHER'
-#!/usr/bin/env bash
-exec "$HOME/.local/bin/robocode" "$@"
-COMPAT_LAUNCHER
-chmod +x "$HOME/.local/bin/robocode-project"
-
-# Add Robocode to the user's desktop application menu.
+# Add a desktop-menu shortcut that invokes the original launcher directly.
 mkdir -p "$HOME/.local/share/applications"
 cat > "$HOME/.local/share/applications/robocode.desktop" <<DESKTOP
 [Desktop Entry]
@@ -147,7 +130,7 @@ Version=1.0
 Type=Application
 Name=Robocode
 Comment=Robocode robot battle simulator
-Exec=$HOME/.local/bin/robocode
+Exec=$DESKTOP_EXEC
 Terminal=false
 Categories=Game;Development;
 DESKTOP
@@ -162,7 +145,7 @@ PATHS
 
 say "Setup finished."
 printf '\nProject checkout: %s\nRobot sources:    %s\nRobocode install: %s\n' "$PROJECT_DIR" "$ROBOT_PACKAGE_DIR" "$ROBocode_HOME"
-printf '\nLaunch Robocode with:\n  robocode\n  %s/.local/bin/robocode\n' "$HOME"
+printf '\nLaunch Robocode with:\n  %s/robocode.sh\n' "$ROBocode_HOME"
 printf 'Application menu entry: Robocode\n'
 printf '\nIn Robocode, make sure the robot root directory is set to:\n  %s\n' "$ROBOT_ROOT"
 printf 'If robots are not detected, add that directory in Preferences/Robot Paths and restart Robocode.\n'
