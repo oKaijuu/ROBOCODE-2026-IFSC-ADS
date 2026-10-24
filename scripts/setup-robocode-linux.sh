@@ -101,121 +101,13 @@ fi
 
 [[ -x "$ROBocode_HOME/robocode.sh" || -f "$ROBocode_HOME/robocode.jar" ]] || die "Robocode was not found at '$ROBocode_HOME'. Set ROBOCODE_HOME to the correct installation directory and rerun."
 
-# Fix the classic launcher before creating or opening it. Sourcing this file
-# can fail in some lab environments; execute it as a child script instead.
+# Fix the classic launcher before creating or opening it. Execute the
+# Java options helper instead of sourcing it, as required by this setup.
 if [[ -f "$ROBocode_HOME/robocode.sh" ]]; then
-  if grep -Eq '^[[:space:]]*\\.[[:space:]]+\\./set_java_options\\.sh[[:space:]]*
-mkdir -p "$HOME/.local/bin"
-cat > "$HOME/.local/bin/robocode" <<LAUNCHER
-#!/usr/bin/env bash
-set -e
-ROBocode_HOME="$ROBocode_HOME"
-if [[ -x "\$ROBocode_HOME/robocode.sh" ]]; then
-  cd "\$ROBocode_HOME"
-  exec ./robocode.sh "\$@"
-elif [[ -f "\$ROBocode_HOME/robocode.jar" ]]; then
-  exec java -jar "\$ROBocode_HOME/robocode.jar" "\$@"
-else
-  echo "Robocode not found at: \$ROBocode_HOME" >&2
-  exit 1
-fi
-LAUNCHER
-chmod +x "$HOME/.local/bin/robocode"
-
-# Preserve the old project-specific command for existing instructions.
-cat > "$HOME/.local/bin/robocode-project" <<'COMPAT_LAUNCHER'
-#!/usr/bin/env bash
-exec "$HOME/.local/bin/robocode" "$@"
-COMPAT_LAUNCHER
-chmod +x "$HOME/.local/bin/robocode-project"
-
-# Add Robocode to the user's desktop application menu.
-mkdir -p "$HOME/.local/share/applications"
-cat > "$HOME/.local/share/applications/robocode.desktop" <<DESKTOP
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Robocode
-Comment=Robocode robot battle simulator
-Exec=$HOME/.local/bin/robocode
-Terminal=false
-Categories=Game;Development;
-DESKTOP
-chmod 644 "$HOME/.local/share/applications/robocode.desktop"
-
-mkdir -p "$HOME/.config/robocode-project"
-cat > "$HOME/.config/robocode-project/paths.env" <<PATHS
-ROBOCODE_HOME="$ROBocode_HOME"
-ROBOT_ROOT="$ROBOT_ROOT"
-PROJECT_DIR="$PROJECT_DIR"
-PATHS
-
-say "Setup finished."
-printf '\nProject checkout: %s\nRobot sources:    %s\nRobocode install: %s\n' "$PROJECT_DIR" "$ROBOT_PACKAGE_DIR" "$ROBocode_HOME"
-printf '\nLaunch Robocode with:\n  robocode\n  %s/.local/bin/robocode\n' "$HOME"
-printf 'Application menu entry: Robocode\n'
-printf '\nIn Robocode, make sure the robot root directory is set to:\n  %s\n' "$ROBOT_ROOT"
-printf 'If robots are not detected, add that directory in Preferences/Robot Paths and restart Robocode.\n'
-printf '\nCompatibility: V3.1 uses the V3 learning-data format but stores its progress separately under MadaraV3_1.data. Existing V3.1 learning data is never overwritten.\n'
-printf '\nImportant: this script cannot preserve files if the Linux environment wipes your entire home directory. Keep this script or its GitHub URL available and rerun it after a reset.\n'
- "$ROBocode_HOME/robocode.sh"; then
-    sed -i -E 's|^[[:space:]]*\\.[[:space:]]+\\./set_java_options\\.sh[[:space:]]*$|./set_java_options.sh|' "$ROBocode_HOME/robocode.sh"
+  if grep -Fqx '. ./set_java_options.sh' "$ROBocode_HOME/robocode.sh"; then
+    sed -i 's|^\. ./set_java_options\.sh$|./set_java_options.sh|' "$ROBocode_HOME/robocode.sh"
     say "Patched robocode.sh: set_java_options.sh will be executed directly"
-  elif grep -Eq '^[[:space:]]*\\./set_java_options\\.sh[[:space:]]*
-mkdir -p "$HOME/.local/bin"
-cat > "$HOME/.local/bin/robocode" <<LAUNCHER
-#!/usr/bin/env bash
-set -e
-ROBocode_HOME="$ROBocode_HOME"
-if [[ -x "\$ROBocode_HOME/robocode.sh" ]]; then
-  cd "\$ROBocode_HOME"
-  exec ./robocode.sh "\$@"
-elif [[ -f "\$ROBocode_HOME/robocode.jar" ]]; then
-  exec java -jar "\$ROBocode_HOME/robocode.jar" "\$@"
-else
-  echo "Robocode not found at: \$ROBocode_HOME" >&2
-  exit 1
-fi
-LAUNCHER
-chmod +x "$HOME/.local/bin/robocode"
-
-# Preserve the old project-specific command for existing instructions.
-cat > "$HOME/.local/bin/robocode-project" <<'COMPAT_LAUNCHER'
-#!/usr/bin/env bash
-exec "$HOME/.local/bin/robocode" "$@"
-COMPAT_LAUNCHER
-chmod +x "$HOME/.local/bin/robocode-project"
-
-# Add Robocode to the user's desktop application menu.
-mkdir -p "$HOME/.local/share/applications"
-cat > "$HOME/.local/share/applications/robocode.desktop" <<DESKTOP
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Robocode
-Comment=Robocode robot battle simulator
-Exec=$HOME/.local/bin/robocode
-Terminal=false
-Categories=Game;Development;
-DESKTOP
-chmod 644 "$HOME/.local/share/applications/robocode.desktop"
-
-mkdir -p "$HOME/.config/robocode-project"
-cat > "$HOME/.config/robocode-project/paths.env" <<PATHS
-ROBOCODE_HOME="$ROBocode_HOME"
-ROBOT_ROOT="$ROBOT_ROOT"
-PROJECT_DIR="$PROJECT_DIR"
-PATHS
-
-say "Setup finished."
-printf '\nProject checkout: %s\nRobot sources:    %s\nRobocode install: %s\n' "$PROJECT_DIR" "$ROBOT_PACKAGE_DIR" "$ROBocode_HOME"
-printf '\nLaunch Robocode with:\n  robocode\n  %s/.local/bin/robocode\n' "$HOME"
-printf 'Application menu entry: Robocode\n'
-printf '\nIn Robocode, make sure the robot root directory is set to:\n  %s\n' "$ROBOT_ROOT"
-printf 'If robots are not detected, add that directory in Preferences/Robot Paths and restart Robocode.\n'
-printf '\nCompatibility: V3.1 uses the V3 learning-data format but stores its progress separately under MadaraV3_1.data. Existing V3.1 learning data is never overwritten.\n'
-printf '\nImportant: this script cannot preserve files if the Linux environment wipes your entire home directory. Keep this script or its GitHub URL available and rerun it after a reset.\n'
- "$ROBocode_HOME/robocode.sh"; then
+  elif grep -Fqx './set_java_options.sh' "$ROBocode_HOME/robocode.sh"; then
     say "robocode.sh already contains the set_java_options.sh fix"
   else
     warn "Could not find the expected set_java_options.sh line in robocode.sh; leaving the file unchanged."
