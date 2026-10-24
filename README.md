@@ -217,36 +217,53 @@ Cada versão possui sua própria branch para permitir inspeção e comparação 
 
 ## 🐧 Automatic Robocode setup on Linux
 
-If your Linux environment resets after shutdown, use the setup script to reinstall the requirements, restore the repository, and copy all robot versions into the Robocode robot directory.
+Use the quick installer to restore the repository, install the project robots, and create a standard Robocode launcher. It is designed for Ubuntu/Debian-based lab environments and does not require administrator privileges.
 
 ### Quick install
 
-Run this in a terminal on Ubuntu or Debian:
+Run in a terminal:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/main/scripts/setup-robocode-linux.sh -o /tmp/setup-robocode-linux.sh
 bash /tmp/setup-robocode-linux.sh
 ```
 
-The script uses the Git, curl and Java already available on the machine, clones or updates this repository, fetches the version branches, and copies **StationaryTracker, Madara V1, V2, V3 and V3.1**, including version-specific metadata and separate learning-data files seeded from V3 when available. It does **not** run `apt`, `apt-get`, `sudo`, or any system package manager. If a required tool is missing, it stops and tells you to ask the lab administrator rather than attempting a privileged installation.
+The script uses the existing Git, curl, and Java installations. It never runs `apt`, `apt-get`, `sudo`, or a system package manager. If a required command is missing, it stops and explains what needs to be provided by the lab administrator.
 
-The classic Robocode installer is downloaded from SourceForge and opens its graphical setup wizard on the first run. Choose `~/robocode` as the installation directory when prompted. The script also creates a launcher at `~/.local/bin/robocode-project`.
+It fetches the project branches and installs **StationaryTracker, Madara V1, V2, V3, and V3.1**, including the V3.1 source and properties file.
 
-### After installation
+### V3.1 learning-data compatibility
 
-Start Robocode with:
+Madara V3.1 is based on V3 and uses the same learning-data filename and data format. During installation, the V3 learning file is copied into V3.1's own data directory only if the V3.1 file does not already exist. The two robots then keep their progress separate:
+
+- V3: `~/robocode/robots/TriStateRobots/MadaraV3.data/madara-v3-learning.dat`
+- V3.1: `~/robocode/robots/TriStateRobots/MadaraV3_1.data/madara-v3-learning.dat`
+
+Existing learning files are not overwritten. This lets V3.1 start from the available V3 learning state without making both versions write to the same file. If the V3 learning file is not available in the repository, the installer skips seeding it.
+
+### Launch Robocode
+
+The installer adds a launcher named `robocode` and a **Robocode** application-menu entry. After setup, launch it with:
 
 ```bash
-~/.local/bin/robocode-project
+robocode
 ```
 
-In Robocode, ensure the robot root directory is set to:
+If `robocode` is not found, run it directly:
+
+```bash
+~/.local/bin/robocode
+```
+
+The previous `~/.local/bin/robocode-project` command is also kept as a compatibility alias.
+
+Choose `~/robocode` as the installation directory in the graphical installer if Robocode is not already installed. In Robocode, make sure the robot root directory is set to:
 
 ```
 ~/robocode/robots
 ```
 
-If the robots do not appear, add that path in Robocode's robot path settings and restart the application.
+If the robots do not appear, add that directory in Robocode's robot path settings and restart the application.
 
-**Important:** the script automates setup, but it cannot prevent data loss if the Linux environment deletes the entire home directory on shutdown. Keep the command above accessible; after a reset, run it again. The project checkout and robot files are recreated locally.
+**Important:** if the lab environment deletes your entire home directory at shutdown, the installer and locally saved learning data will also be deleted. Keep the quick-install command accessible and rerun it after a reset.
 
