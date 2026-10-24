@@ -228,7 +228,7 @@ curl -fsSL https://raw.githubusercontent.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/main
 bash /tmp/setup-robocode-linux.sh
 ```
 
-The script uses the existing Git, curl, and Java installations. It never runs `apt`, `apt-get`, `sudo`, or a system package manager. If a required command is missing, it stops and explains what needs to be provided by the lab administrator.
+The script uses the existing Git, curl, and Java installations. It never runs `apt`, `apt-get`, `sudo`, or a system package manager. If a required command is missing, it stops and explains what needs to be provided by the lab administrator. It installs Robocode under `~/robocode` by default and automatically patches `~/robocode/robocode.sh`, changing `. ./set_java_options.sh` to `./set_java_options.sh` before creating the launcher.
 
 It fetches the project branches and installs **StationaryTracker, Madara V1, V2, V3, and V3.1**, including the V3.1 source and properties file.
 
