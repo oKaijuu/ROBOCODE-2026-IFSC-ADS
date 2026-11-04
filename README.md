@@ -1,43 +1,52 @@
 <div align="center">
 
-<img src="https://media1.tenor.com/m/xwKNvNW00NEAAAAC/madara.gif" width="320" alt="Madara V1" />
+<img src="https://media1.tenor.com/m/xwKNvNW00NEAAAAC/madara.gif" width="420" alt="Madara V1" />
 
 # Madara V1
 
-### Robocode · IFSC ADS 2026
+Robocode · IFSC ADS 2026
 
-**First generation of the Madara robot**
+**The first robot in the Madara series.**  
+*A primeira versão da série Madara.*
 
-[![Java](https://img.shields.io/badge/Language-Java-cc3333?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
-[![Version](https://img.shields.io/badge/Madara-V1-bb8f35?style=for-the-badge)](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1)
-
-[Repository home](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS) · [Source file](./MadaraV1.java) · [Next generation: V2](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2)
+[English](#english) · [Português](#portugues) · [Main repository](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS)
 
 </div>
 
 ---
 
-## Overview
+<a id="english"></a>
+## English
 
-Madara V1 is the first iteration in the Madara robot series. This branch keeps the V1 implementation separate so its behavior can be inspected and compared without changes from later generations.
+Madara V1 marks the transition from the project's original robot to the Madara series. This branch keeps that first version available as it was developed, so later changes can be compared against a clear starting point.
 
-## Goals
+The focus is on the robot itself: how it moves, chooses opponents, and aims during a match. Newer versions explore more elaborate approaches, but V1 remains useful in head-to-head and multi-robot tests.
 
-- Preserve the first Madara implementation.
-- Provide a stable point of comparison for subsequent versions.
-- Evaluate performance in repeatable Robocode battles.
+### Run in Robocode
 
-## Run it
+Open `MadaraV1.java` in the Robocode editor and compile it. Run a few battles with the same conditions you use for V2 and V3 before comparing results.
 
-1. Open `MadaraV1.java` in Robocode's Robot Editor or place it in the configured robot source directory.
-2. Compile the robot.
-3. Test it against `StationaryTracker` and other opponents under consistent battle settings.
+**Source:** [MadaraV1.java](./MadaraV1.java)
 
-## Version lineage
+**Explore:** [StationaryTracker](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker) · [Madara V2](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2)
 
-- [StationaryTracker — original baseline](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker)
-- **Madara V1 — first generation**
-- [Madara V2 — second generation](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2)
-- [Madara V3 — learning and persistence](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3)
+---
+
+<a id="portugues"></a>
+## Português
+
+Madara V1 marca a passagem do robô original para a série Madara. Esta branch conserva a primeira versão para que as mudanças das gerações seguintes possam ser comparadas com um ponto de partida claro.
+
+O interesse aqui é observar como o robô se movimenta, escolhe alvos e mira durante uma batalha. As versões seguintes experimentam estratégias mais elaboradas, mas a V1 continua útil em testes individuais e com vários oponentes.
+
+### Como executar no Robocode
+
+Abra `MadaraV1.java` no editor do Robocode e compile. Rode algumas batalhas nas mesmas condições usadas para V2 e V3 antes de comparar os resultados.
+
+**Código-fonte:** [MadaraV1.java](./MadaraV1.java)
+
+**Outras versões:** [StationaryTracker](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker) · [Madara V2](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2)
+
+---
 
 <div align="center"><sub>ROBOCODE · IFSC ADS · 2026</sub></div>
