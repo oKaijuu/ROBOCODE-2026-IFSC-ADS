@@ -1,123 +1,265 @@
 <div align="center">
 
-<img src="https://media1.tenor.com/m/LzC8ISbABmoAAAAd/%EA%B8%B0%EB%AA%A8%EC%B0%8C.gif" width="540" alt="Madara V3.1 — Robocode" />
+<img src="https://media1.tenor.com/m/LzC8ISbABmoAAAAd/%EA%B8%B0%EB%AA%A8%EC%B0%8C.gif" width="100%" alt="Madara V3.1 animated banner" />
 
-# Madara · Robocode
+# ROBOCODE · IFSC ADS 2026
 
-**IFSC · Análise e Desenvolvimento de Sistemas · 2026**
+### An evolving Robocode AI project
 
-From StationaryTracker to Madara V3.1 — different strategies, one arena.
+**One baseline. Four Madara versions. Continuous improvement.**
 
-[English](#english) · [Português](#portugues) · [Current robot](./MadaraV3_1.java)
+[![Java](https://img.shields.io/badge/Language-Java-cc3333?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
+[![Robocode](https://img.shields.io/badge/Platform-Robocode-6f42c1?style=for-the-badge)](https://robocode.sourceforge.io/)
+[![Versions](https://img.shields.io/badge/Madara-V1%20%7C%20V2%20%7C%20V3%20%7C%20V3.1-bb8f35?style=for-the-badge)](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/branches)
+
+**Language / Idioma:** [English](#english-version) · [Português](#versao-em-portugues)
+
+[**Robot lineup**](#-robot-lineup) · [**Branch map**](#-branch-map)
 
 </div>
 
 ---
 
-<a id="english"></a>
-## English
+<a id="english-version"></a>
 
-### About the project
+## English version
 
-This project started with StationaryTracker and grew into a series of Java robots built for [Robocode](https://robocode.sourceforge.io/). Each Madara version explores a different approach to aiming, movement, and surviving fights against multiple opponents.
+### Project overview
 
-**Madara V3.1 is the current robot in `main`.** It builds on V3's tracking, GuessFactor targeting, and danger-aware movement, with changes intended to reduce repeated calculations during movement decisions. Older versions have their own branches, so their code remains available without getting mixed into the latest version.
+This project began with **StationaryTracker** and grew into the Madara series: **V1, V2, V3, and V3.1**. Each version explores how to improve aiming, movement, and survival in Robocode, while V3.1 refines V3's movement evaluation.
 
-### Robots and branches
+Each version has its own branch for comparison. The `main` branch now features **Madara V3.1** as the current robot, with `MadaraV3_1.java` and `MadaraV3_1.properties`. The original StationaryTracker remains available in its own branch.
 
-| Branch | What's inside |
-|---|---|
-| [`main`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/main) | This README and the current `MadaraV3_1.java` robot, including its `.properties` file |
-| [`stationary-tracker`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker) | The original `StationaryTracker.java` robot |
-| [`madara-v1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) | The first Madara implementation |
-| [`madara-v2`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) | The second Madara iteration |
-| [`madara-v3`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3) | V3 source, configuration, and learning data |
-| [`madara-v3.1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1) | V3.1 development files and its dedicated README |
-| [`experiment/madara-v3-melee-movement`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/experiment/madara-v3-melee-movement) | Experimental movement work for multi-robot battles |
+## ⚔ Robot lineup
 
-### Running Madara V3.1
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/EIUK28UjRqUAAAAC/china-artillery.gif" width="320" height="180" alt="StationaryTracker animation" />
+      <h3>StationaryTracker</h3>
+      <strong>Original baseline</strong>
+      <p>Starting point for performance comparisons and the project's first robot.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker">Open branch ↗</a>
+    </td>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/xwKNvNW00NEAAAAC/madara.gif" width="320" height="180" alt="Madara V1 animation" />
+      <h3>Madara V1</h3>
+      <strong>First generation</strong>
+      <p>The first Madara implementation, kept separate for direct comparison.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1">Open branch ↗</a>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/xaurczvDhkwAAAAd/naruto-uchiha-madara.gif" width="320" height="180" alt="Madara V2 animation" />
+      <h3>Madara V2</h3>
+      <strong>Second generation</strong>
+      <p>A separate iteration for tracking changes from the V1 design.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2">Open branch ↗</a>
+    </td>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/EpgxcRD1ydsAAAAd/madara-uchiha.gif" width="320" height="180" alt="Madara V3 animation" />
+      <h3>Madara V3</h3>
+      <strong>Learning & experimentation</strong>
+      <p>Includes its configuration and persisted learning data.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3">Open branch ↗</a>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/LzC8ISbABmoAAAAd/%EA%B8%B0%EB%AA%A8%EC%B0%8C.gif" width="320" height="180" alt="Madara V3.1 animation" />
+      <h3>Madara V3.1</h3>
+      <strong>Structural optimization</strong>
+      <p>Refactors V3's movement evaluation to reduce redundant calculations while preserving combat scoring and learning-data compatibility.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1">Open branch ↗</a>
+    </td>
+    <td width="50%" align="center"></td>
+  </tr>
+</table>
 
-The `main` branch includes [`MadaraV3_1.java`](./MadaraV3_1.java) and [`MadaraV3_1.properties`](./MadaraV3_1.properties). Place them together in the `TriStateRobots` package under your Robocode robot directory, then compile the Java file using Robocode's Robot Editor.
+## 🗂 Branch map
 
-For comparisons between versions, use the same opponents, battlefield dimensions, and number of rounds. One win is not enough to tell whether a movement or targeting change helped.
+| Branch | Role | Contents |
+|---|---|---|
+| [`main`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/main) | Current version | This README, `MadaraV3_1.java`, and `MadaraV3_1.properties` |
+| [`stationary-tracker`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker) | Baseline | Original robot source |
+| [`madara-v1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) | Version 1 | `MadaraV1.java` and first-generation code |
+| [`madara-v2`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) | Version 2 | `MadaraV2.java` and second-generation code |
+| [`madara-v3`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3) | Version 3 | `MadaraV3.java`, properties, and learning data |
+| [`madara-v3.1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1) | Version 3.1 | Development branch for `MadaraV3_1.java` and its configuration |
+| [`experiment/madara-v3-melee-movement`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/experiment/madara-v3-melee-movement) | Experiment | Movement experiments for multi-robot battles |
 
-### Quick setup on Linux
+<details>
+  <summary><strong>How to inspect a version</strong></summary>
 
-On Ubuntu/Debian-based environments with Git, curl, and Java already installed, you can use the repository's setup script:
+  1. Open the branch from the table above.
+  2. Review that version's Java source and any associated configuration or data files.
+  3. Run the selected robot in your Robocode environment.
+  4. Compare results under the same battle conditions to keep the evaluation meaningful.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/main/scripts/setup-robocode-linux.sh -o /tmp/setup-robocode-linux.sh
-bash /tmp/setup-robocode-linux.sh
-```
+</details>
 
-It checks out the project, retrieves the robot branches, and copies the source files into `~/robocode/robots/TriStateRobots`. If Robocode is missing, its official graphical installer is opened. The script does not run `sudo`, `apt`, or other system package managers.
+<details>
+  <summary><strong>Repository conventions</strong></summary>
 
-Robocode is launched through its **original script**, not a wrapper inside `~/.local/bin`. Before you open it, the installer adjusts `robocode.sh` from `. ./set_java_options.sh` to `./set_java_options.sh` when that exact line is found.
+  - Keep each Madara generation in its own branch.
+  - Use `StationaryTracker` as the original comparison baseline.
+  - Avoid committing generated `.class` files and temporary test robots.
+  - Preserve each version's required configuration and learning data with its source; keep V3 and V3.1 learning files separate.
 
-```bash
-~/robocode/robocode.sh
-```
-
-A desktop-menu shortcut is also created to point to the original launcher. If your installation is elsewhere, use that directory instead of `~/robocode`.
-
-**Learning data:** V3 and V3.1 keep separate data folders under `TriStateRobots`. The installer can seed V3.1 from the V3 learning file when one exists, but does not overwrite an existing V3.1 file. If the lab resets your home directory between sessions, back up anything you want to keep.
+</details>
 
 ---
 
-<a id="portugues"></a>
-## Português
+<a id="versao-em-portugues"></a>
 
-### Sobre o projeto
+## Versão em português
 
-O projeto começou com o StationaryTracker e evoluiu para uma série de robôs em Java feitos para o [Robocode](https://robocode.sourceforge.io/). Cada versão do Madara experimenta formas diferentes de mirar, se movimentar e sobreviver em batalhas com vários adversários.
+### Visão geral
 
-**Madara V3.1 é o robô atual da branch `main`.** Ele aproveita o rastreamento, a mira com GuessFactor e a movimentação baseada em perigo da V3, com mudanças voltadas a reduzir cálculos repetidos nas decisões de movimento. As versões anteriores continuam em branches próprias, sem misturar seus códigos com a versão atual.
+O projeto começou com o **StationaryTracker** e evoluiu para a série Madara: **V1, V2, V3 e V3.1**. Cada versão experimenta maneiras de melhorar a mira, a movimentação e a sobrevivência no Robocode. A V3.1 refina a avaliação de movimento da V3.
 
-### Robôs e branches
+Cada versão tem sua própria branch para facilitar as comparações. A `main` agora apresenta o **Madara V3.1** como robô principal, com os arquivos `MadaraV3_1.java` e `MadaraV3_1.properties`. O StationaryTracker original continua disponível em sua branch específica.
 
-| Branch | O que você encontra |
-|---|---|
-| [`main`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/main) | Este README, o `MadaraV3_1.java` atual e seu arquivo `.properties` |
-| [`stationary-tracker`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker) | O `StationaryTracker.java` original |
-| [`madara-v1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) | A primeira versão do Madara |
-| [`madara-v2`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) | A segunda versão do Madara |
-| [`madara-v3`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3) | Código, configuração e dados de aprendizado da V3 |
-| [`madara-v3.1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1) | Arquivos de desenvolvimento da V3.1 e seu README |
-| [`experiment/madara-v3-melee-movement`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/experiment/madara-v3-melee-movement) | Experimentos de movimentação em batalhas com muitos robôs |
+## ⚔ Linha de robôs
 
-### Como executar o Madara V3.1
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/EIUK28UjRqUAAAAC/china-artillery.gif" width="320" height="180" alt="Animação do StationaryTracker" />
+      <h3>StationaryTracker</h3>
+      <strong>Referência original</strong>
+      <p>Ponto de partida para comparações de desempenho e primeiro robô do projeto.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker">Abrir branch ↗</a>
+    </td>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/xwKNvNW00NEAAAAC/madara.gif" width="320" height="180" alt="Animação do Madara V1" />
+      <h3>Madara V1</h3>
+      <strong>Primeira geração</strong>
+      <p>Primeira implementação do Madara, mantida separada para comparação direta.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1">Abrir branch ↗</a>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/xaurczvDhkwAAAAd/naruto-uchiha-madara.gif" width="320" height="180" alt="Animação do Madara V2" />
+      <h3>Madara V2</h3>
+      <strong>Segunda geração</strong>
+      <p>Iteração separada para acompanhar as mudanças em relação ao projeto V1.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2">Abrir branch ↗</a>
+    </td>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/EpgxcRD1ydsAAAAd/madara-uchiha.gif" width="320" height="180" alt="Animação do Madara V3" />
+      <h3>Madara V3</h3>
+      <strong>Aprendizado e experimentação</strong>
+      <p>Inclui sua configuração e os dados de aprendizado persistidos.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3">Abrir branch ↗</a>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="https://media1.tenor.com/m/LzC8ISbABmoAAAAd/%EA%B8%B0%EB%AA%A8%EC%B0%8C.gif" width="320" height="180" alt="Animação do Madara V3.1" />
+      <h3>Madara V3.1</h3>
+      <strong>Otimização estrutural</strong>
+      <p>Refatora a avaliação de movimento do V3 para reduzir cálculos redundantes, preservando a pontuação de combate e a compatibilidade dos dados de aprendizado.</p>
+      <a href="https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1">Abrir branch ↗</a>
+    </td>
+    <td width="50%" align="center"></td>
+  </tr>
+</table>
 
-A branch `main` contém [`MadaraV3_1.java`](./MadaraV3_1.java) e [`MadaraV3_1.properties`](./MadaraV3_1.properties). Coloque os dois arquivos no pacote `TriStateRobots`, dentro da pasta de robôs do Robocode, e compile o Java usando o editor do programa.
+## 🗂 Mapa de branches
 
-Para comparar versões, mantenha os mesmos adversários, o mesmo tamanho de arena e a mesma quantidade de rounds. Uma vitória isolada não prova que uma mudança de mira ou movimentação foi melhor.
+| Branch | Função | Conteúdo |
+|---|---|---|
+| [`main`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/main) | Versão atual | Este README, `MadaraV3_1.java` e `MadaraV3_1.properties` |
+| [`stationary-tracker`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker) | Referência | Código-fonte original do robô |
+| [`madara-v1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) | Versão 1 | `MadaraV1.java` e código da primeira geração |
+| [`madara-v2`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) | Versão 2 | `MadaraV2.java` e código da segunda geração |
+| [`madara-v3`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3) | Versão 3 | `MadaraV3.java`, propriedades e dados de aprendizado |
+| [`madara-v3.1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1) | Versão 3.1 | Branch de desenvolvimento do `MadaraV3_1.java` e sua configuração |
+| [`experiment/madara-v3-melee-movement`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/experiment/madara-v3-melee-movement) | Experimentos | Testes de movimentação em batalhas com vários robôs |
 
-### Instalação rápida no Linux
+<details>
+  <summary><strong>Como inspecionar uma versão</strong></summary>
 
-Em ambientes Ubuntu/Debian que já tenham Git, curl e Java instalados, utilize o instalador do projeto:
+  1. Abra a branch desejada na tabela acima.
+  2. Examine o código Java da versão e os arquivos de configuração ou dados associados.
+  3. Execute o robô escolhido no seu ambiente Robocode.
+  4. Compare os resultados sob as mesmas condições de batalha para manter a avaliação consistente.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/main/scripts/setup-robocode-linux.sh -o /tmp/setup-robocode-linux.sh
-bash /tmp/setup-robocode-linux.sh
-```
+</details>
 
-Ele atualiza o repositório, busca as branches dos robôs e copia os códigos para `~/robocode/robots/TriStateRobots`. Se o Robocode não estiver instalado, o instalador gráfico oficial será aberto. O script não executa `sudo`, `apt` nem gerenciadores de pacotes do sistema.
+<details>
+  <summary><strong>Convenções do repositório</strong></summary>
 
-O Robocode é iniciado pelo **arquivo original**, sem criar um iniciador em `~/.local/bin`. Antes da abertura, o instalador troca a linha `. ./set_java_options.sh` por `./set_java_options.sh` em `robocode.sh`, quando encontra essa linha exata.
+  - Mantenha cada geração do Madara em sua própria branch.
+  - Use o `StationaryTracker` como referência original de comparação.
+  - Evite enviar arquivos compilados `.class` e robôs de teste temporários.
+  - Preserve os arquivos de configuração e aprendizado de cada versão junto ao código-fonte; mantenha separados os dados de aprendizado do V3 e do V3.1.
 
-```bash
-~/robocode/robocode.sh
-```
-
-Um atalho para o menu de aplicativos também aponta para o arquivo original. Se você instalou o Robocode em outro diretório, use o caminho correspondente.
-
-**Dados de aprendizado:** V3 e V3.1 usam pastas separadas dentro de `TriStateRobots`. Quando há dados salvos da V3, o instalador pode usá-los como ponto de partida da V3.1, sem sobrescrever os dados que ela já tenha. Se o laboratório apagar sua pasta pessoal após o uso, faça backup do que quiser preservar.
+</details>
 
 ---
 
 <div align="center">
 
-**Madara · Robocode · IFSC 2026**
+<img src="https://media1.tenor.com/m/kU3OB3wwHx8AAAAC/madara-naruto.gif" width="180" alt="Madara animated footer" />
 
-[English](#english) · [Português](#portugues)
+**Built through iteration. Evaluated in battle.**  
+**Construído por iteração. Avaliado em batalha.**
+
+<sub>Robocode · IFSC ADS · 2026</sub>
+
+[Back to English](#english-version) · [Voltar ao português](#versao-em-portugues)
 
 </div>
+
+---
+
+## 🐧 Automatic Robocode setup on Linux
+
+Use the quick installer to restore the repository and install the project robots. It uses Robocode's original launcher at `~/robocode/robocode.sh` instead of creating a wrapper in `~/.local/bin`. It is designed for Ubuntu/Debian-based lab environments and does not require administrator privileges.
+
+### Quick install
+
+Run in a terminal:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/main/scripts/setup-robocode-linux.sh -o /tmp/setup-robocode-linux.sh
+bash /tmp/setup-robocode-linux.sh
+```
+
+The script uses the existing Git, curl, and Java installations. It never runs `apt`, `apt-get`, `sudo`, or a system package manager. If a required command is missing, it stops and explains what needs to be provided by the lab administrator. It installs Robocode under `~/robocode` by default and automatically patches `~/robocode/robocode.sh`, changing `. ./set_java_options.sh` to `./set_java_options.sh`. The installer makes the original `robocode.sh` executable and points the desktop-menu shortcut directly to it; it does not create `~/.local/bin/robocode` or `~/.local/bin/robocode-project`.
+
+It fetches the project branches and installs **StationaryTracker, Madara V1, V2, V3, and V3.1**, including the V3.1 source and properties file.
+
+### V3.1 learning-data compatibility
+
+Madara V3.1 is based on V3 and uses the same learning-data filename and data format. During installation, the V3 learning file is copied into V3.1's own data directory only if the V3.1 file does not already exist. The two robots then keep their progress separate:
+
+- V3: `~/robocode/robots/TriStateRobots/MadaraV3.data/madara-v3-learning.dat`
+- V3.1: `~/robocode/robots/TriStateRobots/MadaraV3_1.data/madara-v3-learning.dat`
+
+Existing learning files are not overwritten. This lets V3.1 start from the available V3 learning state without making both versions write to the same file. If the V3 learning file is not available in the repository, the installer skips seeding it.
+
+### Launch Robocode
+
+The installer uses the original Robocode launcher and adds a **Robocode** application-menu shortcut that points directly to it. Launch Robocode with:
+
+```bash
+~/robocode/robocode.sh
+```
+
+If you installed Robocode in a different directory, replace `~/robocode` with that installation path. The launcher is patched before it is opened, and no wrapper launcher is created under `~/.local/bin`.
+
+Choose `~/robocode` as the installation directory in the graphical installer if Robocode is not already installed. In Robocode, make sure the robot root directory is set to:
+
+```
+~/robocode/robots
+```
+
+If the robots do not appear, add that directory in Robocode's robot path settings and restart the application.
+
+**Important:** if the lab environment deletes your entire home directory at shutdown, the installer and locally saved learning data will also be deleted. Keep the quick-install command accessible and rerun it after a reset.
+
