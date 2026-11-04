@@ -1,46 +1,54 @@
 <div align="center">
 
-<img src="https://media1.tenor.com/m/EpgxcRD1ydsAAAAd/madara-uchiha.gif" width="320" alt="Madara V3" />
+<img src="https://media1.tenor.com/m/EpgxcRD1ydsAAAAd/madara-uchiha.gif" width="420" alt="Madara V3" />
 
 # Madara V3
 
-### Robocode · IFSC ADS 2026
+Robocode · IFSC ADS 2026
 
-**Learning, persistence, and continued development**
+**The version that introduced persistent learning into the series.**  
+*A versão que trouxe aprendizado persistente para a série.*
 
-[![Java](https://img.shields.io/badge/Language-Java-cc3333?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
-[![Version](https://img.shields.io/badge/Madara-V3-2e8b57?style=for-the-badge)](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3)
-
-[Repository home](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS) · [Source file](./MadaraV3.java) · [Properties](./MadaraV3.properties)
+[English](#english) · [Português](#portugues) · [Main repository](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS)
 
 </div>
 
 ---
 
-## Overview
+<a id="english"></a>
+## English
 
-Madara V3 is the third generation of the Madara robot. This branch includes the robot source and associated configuration and persisted learning data where available.
+Madara V3 takes the project further with enemy tracking, shot prediction, danger-aware movement, and targeting statistics. The aim is to use information collected during battles to make better decisions, instead of treating every encounter as completely new.
 
-## Branch contents
+The learning file matters here. The robot can reuse stored data, so losing that file means losing whatever state was saved. The V3.1 branch continues this work with changes to how movement is evaluated.
 
-- `MadaraV3.java` — robot implementation.
-- `MadaraV3.properties` — robot configuration.
-- `MadaraV3.data/madara-v3-learning.dat` — persisted learning data, when present.
+### Run in Robocode
 
-Keep the source, configuration, and learning data together when copying the robot to another environment. Back up the data file before resetting or reinstalling a system if you want to retain learned state.
+Keep `MadaraV3.java` and `MadaraV3.properties` together in the `TriStateRobots` robot package and compile in Robocode. If you use saved learning data, keep it under `MadaraV3.data/madara-v3-learning.dat` and back it up before resetting the environment.
 
-## Run and evaluate
+**Source:** [MadaraV3.java](./MadaraV3.java)  
+**Related files:** `MadaraV3.properties` · `MadaraV3.data/madara-v3-learning.dat`
 
-1. Copy the source and associated files into the Robocode robot directory.
-2. Compile `MadaraV3.java` in Robocode.
-3. Run repeated battles under consistent settings.
-4. Inspect the learning data and compare results over multiple rounds.
+**Explore:** [Madara V2](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) · [Madara V3.1](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1)
 
-## Version lineage
+---
 
-- [StationaryTracker — original baseline](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker)
-- [Madara V1 — first generation](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1)
-- [Madara V2 — second generation](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2)
-- **Madara V3 — learning and persistence**
+<a id="portugues"></a>
+## Português
+
+Madara V3 amplia o projeto com rastreamento de inimigos, previsão de tiros, movimentação baseada em perigo e estatísticas de mira. A proposta é aproveitar informações das batalhas para tomar decisões melhores, em vez de tratar cada encontro como se fosse o primeiro.
+
+O arquivo de aprendizado faz diferença nessa versão. O robô pode reutilizar dados gravados; apagá-los significa perder o estado salvo. A branch V3.1 continua esse trabalho com mudanças na avaliação de movimento.
+
+### Como executar no Robocode
+
+Mantenha `MadaraV3.java` e `MadaraV3.properties` juntos no pacote `TriStateRobots` e compile no Robocode. Se utilizar o aprendizado salvo, mantenha o arquivo em `MadaraV3.data/madara-v3-learning.dat` e faça backup antes de redefinir o ambiente.
+
+**Código-fonte:** [MadaraV3.java](./MadaraV3.java)  
+**Arquivos relacionados:** `MadaraV3.properties` · `MadaraV3.data/madara-v3-learning.dat`
+
+**Outras versões:** [Madara V2](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) · [Madara V3.1](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1)
+
+---
 
 <div align="center"><sub>ROBOCODE · IFSC ADS · 2026</sub></div>
