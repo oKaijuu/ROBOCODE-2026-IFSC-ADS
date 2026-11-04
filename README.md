@@ -1,39 +1,52 @@
 <div align="center">
 
+<img src="https://media1.tenor.com/m/EIUK28UjRqUAAAAC/china-artillery.gif" width="420" alt="StationaryTracker" />
+
 # StationaryTracker
 
-### Robocode · IFSC ADS 2026
+Robocode · IFSC ADS 2026
 
-**The original baseline robot**
+**The robot that started the project.**  
+*O robô que deu início ao projeto.*
 
-[![Java](https://img.shields.io/badge/Java-Robocode-cc3333?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
-[![Role](https://img.shields.io/badge/Role-Baseline-64748b?style=for-the-badge)](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS)
-
-[Repository home](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS) · [Source file](./StationaryTracker.java)
+[English](#english) · [Português](#portugues) · [Main repository](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS)
 
 </div>
 
 ---
 
-## Overview
+<a id="english"></a>
+## English
 
-`StationaryTracker` is the project's original reference implementation. It provides a baseline for observing robot behavior and comparing later Madara generations under equivalent Robocode battle conditions.
+Before the Madara versions, there was StationaryTracker. This is the original robot used as a reference when the project began, and its code stays here so it can be revisited without being mixed with newer implementations.
 
-## Purpose
+Despite the name, this is not just a static target: the source includes tracking, movement, and targeting logic. Its value today is as a historical point of comparison rather than the latest release.
 
-- Preserve the original robot implementation independently.
-- Provide a reference point for evaluating changes in targeting, movement, and survival.
-- Keep baseline comparisons separate from later versions.
+### Run in Robocode
 
-## Run it
+Open `StationaryTracker.java` in the Robocode editor, compile it, and select it for a battle. To make a useful comparison, keep the battlefield size, opponents, and number of rounds the same for the other robots.
 
-1. Clone this branch or download its source.
-2. Add `StationaryTracker.java` to your Robocode robot source directory.
-3. Compile it in Robocode's Robot Editor.
-4. Run it under the same battle settings used to evaluate other versions.
+**Source:** [StationaryTracker.java](./StationaryTracker.java)
 
-## Branch scope
+**Explore:** [Madara V1](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) · [Madara V3.1](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1)
 
-This branch is intentionally limited to the original baseline source. For the later implementations, see [Madara V1](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1), [Madara V2](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2), and [Madara V3](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3).
+---
+
+<a id="portugues"></a>
+## Português
+
+Antes das versões Madara, o projeto começou com o StationaryTracker. Esta branch guarda o robô original para que seja possível consultar sua implementação sem misturá-la com as mudanças das gerações seguintes.
+
+Apesar do nome, ele não é apenas um alvo parado: o código inclui rastreamento, movimentação e mira. Hoje, serve principalmente como referência histórica, não como a versão mais recente.
+
+### Como executar no Robocode
+
+Abra `StationaryTracker.java` no editor do Robocode, compile e selecione o robô para uma batalha. Para comparar resultados, mantenha o tamanho da arena, os adversários e o número de rounds iguais aos das outras versões.
+
+**Código-fonte:** [StationaryTracker.java](./StationaryTracker.java)
+
+**Outras versões:** [Madara V1](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) · [Madara V3.1](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1)
+
+---
 
 <div align="center"><sub>ROBOCODE · IFSC ADS · 2026</sub></div>
