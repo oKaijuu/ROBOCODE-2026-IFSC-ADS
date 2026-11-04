@@ -1,6 +1,7 @@
 package TriStateRobots;
 
 import robocode.AdvancedRobot;
+import robocode.RobocodeFileWriter;
 import robocode.BulletHitEvent;
 import robocode.HitByBulletEvent;
 import robocode.HitRobotEvent;
@@ -1637,7 +1638,7 @@ public class MadaraV3_1 extends AdvancedRobot {
 	}
 
 	private void saveLearningData(boolean log) {
-		try (BufferedWriter w = new BufferedWriter(new FileWriter(getDataFile(LEARNING_FILE)))) {
+		try (BufferedWriter w = new BufferedWriter(new RobocodeFileWriter(getDataFile(LEARNING_FILE)))) {
 			w.write("META|" + roundsPlayed + "|" + roundsWon + "|" + bulletsFired + "|" + bulletsHit
 				+ "|" + damageReceived + "|" + adaptiveMoveDistance + "|" + adaptiveSurfWeight
 				+ "|" + damageDealt);
