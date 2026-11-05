@@ -14,7 +14,7 @@
 
 **Language / Idioma:** [English](#english-version) · [Português](#versao-em-portugues)
 
-[**Robot lineup**](#-robot-lineup) · [**Branch map**](#-branch-map)
+[**Download Madara V3.1 (.jar)**](./TriStateRobots.MadaraV3_1_3.1.jar) · [**Robot lineup**](#-robot-lineup) · [**Branch map**](#-branch-map)
 
 </div>
 
@@ -28,7 +28,19 @@
 
 This project began with **StationaryTracker** and grew into the Madara series: **V1, V2, V3, and V3.1**. Each version explores how to improve aiming, movement, and survival in Robocode, while V3.1 refines V3's movement evaluation.
 
-Each version has its own branch for comparison. The `main` branch now features **Madara V3.1** as the current robot, with `MadaraV3_1.java` and `MadaraV3_1.properties`. The original StationaryTracker remains available in its own branch.
+Each version has its own branch for comparison. The `main` branch provides the **ready-to-use Madara V3.1 JAR**. The Java source and configuration remain available in the [`madara-v3.1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1) development branch, while the original StationaryTracker has its own branch.
+
+### Download and install Madara V3.1
+
+**Official ready-to-use build:** [**`TriStateRobots.MadaraV3_1_3.1.jar` — Download JAR**](./TriStateRobots.MadaraV3_1_3.1.jar)
+
+This is the packaged version of Madara V3.1. It can be added to Robocode **without compiling the Java source**:
+
+1. Download the JAR from the link above.
+2. Copy it to your Robocode `robots` directory (for example, `D:\\robocode\\robots` on Windows or `~/robocode/robots` on Linux).
+3. Open or restart Robocode, refresh its robot list if needed, and select `TriStateRobots.MadaraV3_1` for a new battle.
+
+For the editable source and robot configuration, see the [`madara-v3.1` development branch](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1).
 
 ## ⚔ Robot lineup
 
@@ -87,7 +99,7 @@ Each version has its own branch for comparison. The `main` branch now features *
 
 | Branch | Role | Contents |
 |---|---|---|
-| [`main`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/main) | Current version | This README, `MadaraV3_1.java`, and `MadaraV3_1.properties` |
+| [`main`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/main) | Ready-to-use release | [`TriStateRobots.MadaraV3_1_3.1.jar`](./TriStateRobots.MadaraV3_1_3.1.jar) and this README |
 | [`stationary-tracker`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker) | Baseline | Original robot source |
 | [`madara-v1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) | Version 1 | `MadaraV1.java` and first-generation code |
 | [`madara-v2`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) | Version 2 | `MadaraV2.java` and second-generation code |
@@ -125,7 +137,19 @@ Each version has its own branch for comparison. The `main` branch now features *
 
 O projeto começou com o **StationaryTracker** e evoluiu para a série Madara: **V1, V2, V3 e V3.1**. Cada versão experimenta maneiras de melhorar a mira, a movimentação e a sobrevivência no Robocode. A V3.1 refina a avaliação de movimento da V3.
 
-Cada versão tem sua própria branch para facilitar as comparações. A `main` agora apresenta o **Madara V3.1** como robô principal, com os arquivos `MadaraV3_1.java` e `MadaraV3_1.properties`. O StationaryTracker original continua disponível em sua branch específica.
+Cada versão tem sua própria branch para facilitar as comparações. A `main` disponibiliza o **JAR pronto para uso do Madara V3.1**. O código Java e o arquivo de configuração continuam na [branch `madara-v3.1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1), enquanto o StationaryTracker original permanece em sua própria branch.
+
+### Baixar e instalar o Madara V3.1
+
+**Versão compilada pronta para uso:** [**`TriStateRobots.MadaraV3_1_3.1.jar` — Baixar JAR**](./TriStateRobots.MadaraV3_1_3.1.jar)
+
+Este é o pacote do Madara V3.1 para usar no Robocode **sem precisar compilar o código Java**:
+
+1. Baixe o JAR pelo link acima.
+2. Coloque o arquivo na pasta `robots` do Robocode (por exemplo, `D:\\robocode\\robots` no Windows ou `~/robocode/robots` no Linux).
+3. Abra ou reinicie o Robocode, atualize a lista de robôs se necessário e selecione `TriStateRobots.MadaraV3_1` em uma nova batalha.
+
+O código-fonte editável e a configuração ficam na [branch de desenvolvimento `madara-v3.1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1).
 
 ## ⚔ Linha de robôs
 
@@ -184,7 +208,7 @@ Cada versão tem sua própria branch para facilitar as comparações. A `main` a
 
 | Branch | Função | Conteúdo |
 |---|---|---|
-| [`main`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/main) | Versão atual | Este README, `MadaraV3_1.java` e `MadaraV3_1.properties` |
+| [`main`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/main) | Versão pronta para uso | [`TriStateRobots.MadaraV3_1_3.1.jar`](./TriStateRobots.MadaraV3_1_3.1.jar) e este README |
 | [`stationary-tracker`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/stationary-tracker) | Referência | Código-fonte original do robô |
 | [`madara-v1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v1) | Versão 1 | `MadaraV1.java` e código da primeira geração |
 | [`madara-v2`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v2) | Versão 2 | `MadaraV2.java` e código da segunda geração |
@@ -244,7 +268,7 @@ bash /tmp/setup-robocode-linux.sh
 
 The script uses the existing Git, curl, and Java installations. It never runs `apt`, `apt-get`, `sudo`, or a system package manager. If a required command is missing, it stops and explains what needs to be provided by the lab administrator. It installs Robocode under `~/robocode` by default and automatically patches `~/robocode/robocode.sh`, changing `. ./set_java_options.sh` to `./set_java_options.sh`. The installer makes the original `robocode.sh` executable and points the desktop-menu shortcut directly to it; it does not create `~/.local/bin/robocode` or `~/.local/bin/robocode-project`.
 
-It fetches the project branches and installs **StationaryTracker, Madara V1, V2, V3, and V3.1**, including the V3.1 source and properties file.
+It fetches the project branches and installs **StationaryTracker, Madara V1, V2, V3, and V3.1** source files for development. For the packaged V3.1 version intended for direct use without compilation, download [`TriStateRobots.MadaraV3_1_3.1.jar`](./TriStateRobots.MadaraV3_1_3.1.jar) above.
 
 ### V3.1 learning-data compatibility
 
