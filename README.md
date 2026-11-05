@@ -37,7 +37,7 @@ Each version has its own branch for comparison. The `main` branch provides the *
 This is the packaged version of Madara V3.1. It can be added to Robocode **without compiling the Java source**:
 
 1. Download the JAR from the link above.
-2. Copy it to your Robocode `robots` directory (for example, `D:\\robocode\\robots` on Windows or `~/robocode/robots` on Linux).
+2. Copy it to your Robocode `robots` directory (for example, `D:\robocode\robots` on Windows or `~/robocode/robots` on Linux).
 3. Open or restart Robocode, refresh its robot list if needed, and select `TriStateRobots.MadaraV3_1` for a new battle.
 
 For the editable source and robot configuration, see the [`madara-v3.1` development branch](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1).
@@ -146,7 +146,7 @@ Cada versão tem sua própria branch para facilitar as comparações. A `main` d
 Este é o pacote do Madara V3.1 para usar no Robocode **sem precisar compilar o código Java**:
 
 1. Baixe o JAR pelo link acima.
-2. Coloque o arquivo na pasta `robots` do Robocode (por exemplo, `D:\\robocode\\robots` no Windows ou `~/robocode/robots` no Linux).
+2. Coloque o arquivo na pasta `robots` do Robocode (por exemplo, `D:\robocode\robots` no Windows ou `~/robocode/robots` no Linux).
 3. Abra ou reinicie o Robocode, atualize a lista de robôs se necessário e selecione `TriStateRobots.MadaraV3_1` em uma nova batalha.
 
 O código-fonte editável e a configuração ficam na [branch de desenvolvimento `madara-v3.1`](https://github.com/oKaijuu/ROBOCODE-2026-IFSC-ADS/tree/madara-v3.1).
